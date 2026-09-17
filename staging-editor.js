@@ -345,4 +345,4 @@
   });
 })();
 
-(function(){const current=document.currentScript;if(!current)return;const helper=document.createElement('script');helper.src=new URL('staging-image-helper.js?v=3',current.src).href;document.head.appendChild(helper);})();
+(function(){const current=document.currentScript;if(!current)return;const helper=document.createElement('script');helper.src=new URL('staging-image-helper.js?v=4',current.src).href;document.head.appendChild(helper);})();

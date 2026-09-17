@@ -4,7 +4,7 @@
   const style=document.createElement('style');
   style.textContent=`
     .gps-lightbox-image{cursor:zoom-in}
-    .gps-lightbox-host{position:relative!important}
+    .gps-lightbox-host-positioned{position:relative!important}
     .gps-lightbox-badge{position:absolute;right:12px;bottom:12px;z-index:6;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:rgba(12,12,11,.72);color:#fff;border:1px solid rgba(255,255,255,.32);box-shadow:0 6px 18px rgba(0,0,0,.25);pointer-events:none;opacity:0;transform:translateY(3px);transition:opacity .16s ease,transform .16s ease;font:700 18px/1 system-ui,-apple-system,sans-serif;backdrop-filter:blur(5px)}
     .gps-lightbox-host:hover>.gps-lightbox-badge,.gps-lightbox-host:focus-within>.gps-lightbox-badge{opacity:1;transform:none}
     #gpsLightbox{position:fixed;inset:0;z-index:99990;display:none;align-items:center;justify-content:center;padding:clamp(18px,4vw,52px);background:rgba(0,0,0,.88);backdrop-filter:blur(4px)}
@@ -40,6 +40,7 @@
     if(!img||img.tagName!=='IMG')return false;
     if(!img.closest('main'))return false;
     if(img.closest('a,button,#gpsLightbox,#gpsEditorPanel,#gpsEditorToggle,#gpsTokenOverlay,#gpsImageNameTip'))return false;
+    if(img.classList.contains('cta-image'))return false;
     const src=img.currentSrc||img.getAttribute('src')||'';
     if(!src)return false;
     return true;
@@ -52,6 +53,13 @@
     const host=img.parentElement;
     if(!host)return;
     host.classList.add('gps-lightbox-host');
+
+    const imagePosition=getComputedStyle(img).position;
+    const hostPosition=getComputedStyle(host).position;
+    if(imagePosition!=='absolute'&&imagePosition!=='fixed'&&hostPosition==='static'){
+      host.classList.add('gps-lightbox-host-positioned');
+    }
+
     if(!host.querySelector(':scope > .gps-lightbox-badge')){
       const badge=document.createElement('span');
       badge.className='gps-lightbox-badge';

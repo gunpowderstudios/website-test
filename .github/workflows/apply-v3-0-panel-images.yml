@@ -1,0 +1,46 @@
+name: Apply v3.0 panel images
+
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-v3-0-panel-images.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply homepage panel images
+        run: |
+          if [ -f images/book-of-dungeon-2-main.jpg ] && [ ! -f images/bag-of-dungeon-2-main.jpg ]; then
+            git mv images/book-of-dungeon-2-main.jpg images/bag-of-dungeon-2-main.jpg
+          fi
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          s=s.replace('<meta name="build-version" content="v2.9">','<meta name="build-version" content="v3.0">')
+          s=s.replace('.topbar:after{content:"v2.9";','.topbar:after{content:"v3.0";')
+          old='.feature-forest{grid-column:span 5;background:linear-gradient(135deg,#3e5b42,#152016);color:white}.feature-legends{grid-column:span 7;background:linear-gradient(135deg,#3c274c,#151119);color:white}'
+          new='.feature-forest{grid-column:span 5;background:linear-gradient(180deg,rgba(16,28,17,.05) 0%,rgba(11,20,12,.22) 42%,rgba(6,12,7,.90) 100%),url("images/bag-of-dungeon-2-main.jpg") center 42%/cover no-repeat;color:white;min-height:460px}.feature-legends{grid-column:span 7;background:linear-gradient(180deg,rgba(25,15,30,.05) 0%,rgba(24,14,30,.22) 42%,rgba(11,7,14,.90) 100%),url("images/legends-main.jpg") center 42%/cover no-repeat;color:white;min-height:460px}'
+          if old not in s:
+              raise SystemExit('Expected feature CSS not found')
+          s=s.replace(old,new)
+          oldshadow='.feature-main h3,.feature-main p,.feature-main .link,.feature-book h3,.feature-book p,.feature-book .link{text-shadow:0 2px 10px rgba(0,0,0,.55)}'
+          newshadow='.feature-main h3,.feature-main p,.feature-main .link,.feature-book h3,.feature-book p,.feature-book .link,.feature-forest h3,.feature-forest p,.feature-forest .link,.feature-legends h3,.feature-legends p,.feature-legends .link{text-shadow:0 2px 10px rgba(0,0,0,.55)}'
+          if oldshadow not in s:
+              raise SystemExit('Expected text-shadow CSS not found')
+          s=s.replace(oldshadow,newshadow)
+          p.write_text(s)
+          PY
+          rm .github/workflows/apply-v3-0-panel-images.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "v3.0 - add BOD2 and Legends homepage panel images"
+          git push

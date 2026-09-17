@@ -1,0 +1,30 @@
+name: Bump TEST image helper v3
+on:
+  push:
+    paths:
+      - .github/workflows/bump-image-helper-v3.yml
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Bump helper cache version and commit safely
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('staging-editor.js')
+          s=p.read_text()
+          s=s.replace('staging-image-helper.js?v=2','staging-image-helper.js?v=3')
+          p.write_text(s)
+          PY
+          git rm .github/workflows/bump-image-helper-v3.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add staging-editor.js
+          git commit -m "TEST editor - load image replacement helper v3"
+          git pull --rebase origin main
+          git push

@@ -1,0 +1,57 @@
+name: Apply v3.5 cleaner labels and menu
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-v3-5-clean-pills-menu.yml'
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update TEST pages
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          pages = [
+              Path('index.html'),
+              Path('bag-of-dungeon/index.html'),
+              Path('bag-of-dungeon-2/index.html'),
+              Path('product/bag-of-dungeon-legends-pack/index.html'),
+          ]
+
+          for p in pages:
+              s = p.read_text()
+
+              # Keep a single site-wide TEST version for this change.
+              s = re.sub(r'<meta name="build-version" content="v[0-9.]+">', '<meta name="build-version" content="v3.5">', s, count=1)
+              s = re.sub(r'(\.topbar:after\{content:")v[0-9.]+(";)', r'\1v3.5\2', s, count=1)
+              s = re.sub(r'(\.devbar:after\{content:")v[0-9.]+(";)', r'\1v3.5\2', s, count=1)
+
+              # Remove the small translucent pill labels/chips.
+              s = re.sub(r'<span class="tag">.*?</span>', '', s, flags=re.S)
+              s = re.sub(r'<div class="quick">.*?</div>', '', s, flags=re.S)
+              s = re.sub(r'\.tag\{[^}]*\}', '', s)
+              s = re.sub(r'\.quick\{[^}]*\}\.quick span\{[^}]*\}', '', s)
+
+              # Remove Play BOD3D from navigation only, leaving other BOD3D content alone.
+              def clean_nav(m):
+                  inner = m.group(2)
+                  inner = re.sub(r'<a\s+href="https://www\.gunpowderstudios\.co\.uk/bod3d/">Play BOD3D</a>', '', inner)
+                  return m.group(1) + inner + m.group(3)
+              s = re.sub(r'(<nav\b[^>]*>)(.*?)(</nav>)', clean_nav, s, flags=re.S)
+
+              p.write_text(s)
+          PY
+      - name: Remove temporary workflows and commit
+        run: |
+          git rm -f .github/workflows/apply-v3-5-clean-pills-menu.yml
+          if [ -f .github/workflows/apply-v3-3-staging-editor.yml ]; then git rm -f .github/workflows/apply-v3-3-staging-editor.yml; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html bag-of-dungeon/index.html bag-of-dungeon-2/index.html product/bag-of-dungeon-legends-pack/index.html
+          git commit -m "v3.5 - remove translucent pills and BOD3D menu link"
+          git push

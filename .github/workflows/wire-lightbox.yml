@@ -1,0 +1,50 @@
+name: Wire TEST image lightbox
+on:
+  push:
+    paths:
+      - '.github/workflows/wire-lightbox.yml'
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add shared lightbox to TEST pages
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          pages={
+            'index.html':'lightbox.js?v=1',
+            'bag-of-dungeon/index.html':'../lightbox.js?v=1',
+            'bag-of-dungeon-2/index.html':'../lightbox.js?v=1',
+            'product/bag-of-dungeon-legends-pack/index.html':'../../lightbox.js?v=1',
+          }
+          for name,src in pages.items():
+              p=Path(name)
+              s=p.read_text()
+              if 'lightbox.js' in s:
+                  continue
+              tag=f'<script src="{src}"></script>'
+              marker='staging-editor.js'
+              pos=s.rfind('<script',0,s.find(marker)+1) if marker in s else -1
+              if pos>=0:
+                  s=s[:pos]+tag+'\n'+s[pos:]
+              else:
+                  s=s.replace('</body>',tag+'\n</body>')
+              p.write_text(s)
+          PY
+      - name: Commit safely
+        run: |
+          git rm .github/workflows/wire-lightbox.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html bag-of-dungeon/index.html bag-of-dungeon-2/index.html product/bag-of-dungeon-legends-pack/index.html
+          git commit -m "Add click-to-enlarge image lightbox"
+          for i in 1 2 3; do
+            git fetch origin main
+            git rebase origin/main && git push && exit 0
+            git rebase --abort || true
+            sleep 2
+          done
+          exit 1

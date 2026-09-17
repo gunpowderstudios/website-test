@@ -1,0 +1,42 @@
+name: Kastles orange theme
+on:
+  push:
+    paths:
+      - '.github/workflows/kastles-orange-theme.yml'
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply Kastles #F89317 theme
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('kastles-card-game/index.html')
+          s=p.read_text()
+          reps={
+            '<meta name="theme-color" content="#2a160c">':'<meta name="theme-color" content="#F89317">',
+            '--gold:#d99c38':'--gold:#F89317',
+            '--brown:#6f351a':'--brown:#F89317',
+            'rgba(217,156,56,.20)':'rgba(248,147,23,.22)',
+            'rgba(217,156,56,.13)':'rgba(248,147,23,.18)',
+            'color:#efc77c':'color:#F89317',
+            'rgba(217,156,56,.23)':'rgba(248,147,23,.28)',
+            'style="color:#8a4d1b"':'style="color:#F89317"',
+            '.callout-card strong{color:#8a4d1b}':'.callout-card strong{color:#F89317}',
+            'background:linear-gradient(120deg,#6d3219,#20120b)':'background:linear-gradient(120deg,#F89317,#5a2b00)'
+          }
+          for a,b in reps.items():
+              s=s.replace(a,b)
+          p.write_text(s)
+          PY
+          git rm .github/workflows/kastles-orange-theme.yml
+      - name: Commit safely
+        run: |
+          git config user.name "Gunpowder Studios"
+          git config user.email "38918114+gunpowderstudios@users.noreply.github.com"
+          git add -A
+          git commit -m "Kastles page theme to #F89317"
+          git push

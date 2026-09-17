@@ -21,11 +21,12 @@ jobs:
               s += "\n(function(){const current=document.currentScript;if(!current)return;const helper=document.createElement('script');helper.src=new URL('staging-image-helper.js',current.src).href;document.head.appendChild(helper);})();\n"
               p.write_text(s)
           PY
-      - name: Commit
+      - name: Commit and rebase safely
         run: |
           git rm .github/workflows/add-image-name-hover.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add staging-editor.js
           git commit -m "TEST editor - show image filenames on hover"
+          git pull --rebase origin main
           git push

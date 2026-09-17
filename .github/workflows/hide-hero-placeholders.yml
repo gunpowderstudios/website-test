@@ -1,0 +1,36 @@
+name: Hide TEST hero placeholders
+on:
+  push:
+    paths:
+      - '.github/workflows/hide-hero-placeholders.yml'
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Hide old hero placeholder text
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          for path in ['bag-of-dungeon-2/index.html','bag-of-dungeon-legends/index.html']:
+              p=Path(path)
+              s=p.read_text()
+              needle='.hero-visual img{'
+              idx=s.find(needle)
+              if idx<0: raise SystemExit(f'hero image css missing in {path}')
+              # append scoped slot rule immediately after the hero img rule block by replacing known filter ending
+              marker='filter:drop-shadow(0 28px 45px rgba(0,0,0,.4))}'
+              if marker not in s: raise SystemExit(f'hero filter marker missing in {path}')
+              s=s.replace(marker, marker+'.hero-visual .slot{display:none}',1)
+              p.write_text(s)
+          PY
+      - name: Commit safely
+        run: |
+          rm -f .github/workflows/hide-hero-placeholders.yml
+          git config user.name 'Gunpowder Studios'
+          git config user.email '38918114+gunpowderstudios@users.noreply.github.com'
+          git add -A
+          git commit -m 'Hide hero placeholder labels'
+          git push

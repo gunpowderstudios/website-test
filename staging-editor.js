@@ -148,6 +148,21 @@
     setStatus(on?'Editing is ON · Save commits to TEST GitHub':'TEST editor · Save commits to GitHub');
   }
 
+  // While text editing is active, linked cards/buttons/nav items must stay editable
+  // instead of following their href. Normal link behaviour returns when editing stops.
+  document.addEventListener('click',e=>{
+    if(!editing)return;
+    if(e.target.closest('#gpsEditorPanel,#gpsEditorToggle,#gpsTokenOverlay'))return;
+    const link=e.target.closest('a[href]');
+    if(!link)return;
+    e.preventDefault();
+    e.stopPropagation();
+    const editable=e.target.closest('[data-gps-edit-id]');
+    if(editable&&editable!==document.activeElement){
+      try{editable.focus({preventScroll:true});}catch(err){editable.focus();}
+    }
+  },true);
+
   function currentChanges(){
     const changes={};
     Object.keys(elements).forEach(id=>{

@@ -1,0 +1,51 @@
+name: Fix TEST linked text editing
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-editor-linked-text.yml'
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Prevent links navigating while editing
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path('staging-editor.js')
+          s = p.read_text()
+          marker = "  function currentChanges(){\n"
+          if marker not in s:
+              raise SystemExit('Could not find editor insertion point; refusing stale edit')
+          guard = """  // While text editing is active, linked cards/buttons/nav items must stay editable\n  // instead of following their href. Normal link behaviour returns when editing stops.\n  document.addEventListener('click',e=>{\n    if(!editing)return;\n    if(e.target.closest('#gpsEditorPanel,#gpsEditorToggle,#gpsTokenOverlay'))return;\n    const link=e.target.closest('a[href]');\n    if(!link)return;\n    e.preventDefault();\n    e.stopPropagation();\n    const editable=e.target.closest('[data-gps-edit-id]');\n    if(editable&&editable!==document.activeElement){\n      try{editable.focus({preventScroll:true});}catch(err){editable.focus();}\n    }\n  },true);\n\n"""
+          if "linked cards/buttons/nav items must stay editable" not in s:
+              s = s.replace(marker, guard + marker, 1)
+          p.write_text(s)
+
+          # Force browsers to load the corrected TEST editor everywhere it is used.
+          rx = re.compile(r'staging-editor\\.js\\?v=[^\"\'<> ]+')
+          for html in Path('.').rglob('*.html'):
+              text = html.read_text()
+              new = rx.sub('staging-editor.js?v=3.5.2', text)
+              if new != text:
+                  html.write_text(new)
+          PY
+          git rm --cached --ignore-unmatch .github/workflows/fix-editor-linked-text.yml
+          rm -f .github/workflows/fix-editor-linked-text.yml
+      - name: Commit safely
+        run: |
+          git config user.name "Gunpowder"
+          git config user.email "38918114+gunpowderstudios@users.noreply.github.com"
+          git add -A
+          git commit -m "Fix editing text inside linked cards"
+          for i in 1 2 3; do
+            git pull --rebase origin main && git push origin HEAD:main && exit 0
+            sleep 2
+          done
+          exit 1

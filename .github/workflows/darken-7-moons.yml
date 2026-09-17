@@ -1,0 +1,70 @@
+name: Darken 7 Moons fantasy palette
+on:
+  push:
+    paths:
+      - '.github/workflows/darken-7-moons.yml'
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply darker fantasy palette
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('7-moons/index.html')
+          s=p.read_text()
+          reps={
+          '<meta name="theme-color" content="#4fb9d8">':'<meta name="theme-color" content="#142a33">',
+          ':root{--ink:#18222a;--paper:#eef6e7;--cream:#f8fbf4;--sky:#4fb9d8;--sky-deep:#2586ad;--grass:#7ab447;--grass-light:#b6cf67;--gold:#e6c930;--slate:#243746;--muted:#66746a;--line:rgba(24,34,42,.14);--max:1180px;--shadow:0 22px 60px rgba(32,68,52,.18)}':':root{--ink:#e7eee9;--paper:#132126;--cream:#172925;--sky:#2f758c;--sky-deep:#79b6c8;--grass:#3f6d45;--grass-light:#688b58;--gold:#c7a94a;--slate:#0f1a22;--muted:#9aa8a1;--line:rgba(231,238,233,.14);--max:1180px;--shadow:0 22px 60px rgba(0,0,0,.38)}',
+          '*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--ink);background:linear-gradient(180deg,#f5fbf2 0%,#e4efd8 100%);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.55}':'*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--ink);background:radial-gradient(circle at 20% 0%,rgba(47,117,140,.12),transparent 28rem),linear-gradient(180deg,#0d171c 0%,#132019 100%);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.55}',
+          '.devbar{position:relative;background:#15232b;color:#dcecf0;':'.devbar{position:relative;background:#080f13;color:#c7d5d3;',
+          'background:#2586ad;color:white':'background:#274f5c;color:white',
+          'header{position:sticky;top:0;z-index:20;background:rgba(244,249,239,.95);backdrop-filter:blur(12px);border-bottom:1px solid rgba(24,34,42,.1)}':'header{position:sticky;top:0;z-index:20;background:rgba(12,23,27,.95);backdrop-filter:blur(12px);border-bottom:1px solid rgba(231,238,233,.10);color:#e7eee9}',
+          '.hero{padding:0;position:relative;overflow:hidden;color:white;background:radial-gradient(circle at 80% 18%,rgba(255,255,255,.28),transparent 17rem),radial-gradient(circle at 78% 72%,rgba(230,201,48,.14),transparent 20rem),linear-gradient(180deg,#58c7e7 0%,#51b5d1 48%,#6aa64d 100%)}':'.hero{padding:0;position:relative;overflow:hidden;color:white;background:radial-gradient(circle at 82% 16%,rgba(199,169,74,.18),transparent 17rem),radial-gradient(circle at 76% 74%,rgba(63,109,69,.30),transparent 22rem),linear-gradient(155deg,#08131a 0%,#12323b 52%,#16301f 100%)}',
+          '.hero:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(21,42,52,.58) 0%,rgba(27,63,74,.30) 47%,rgba(31,76,60,.10) 100%);pointer-events:none}':'.hero:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(5,12,17,.82) 0%,rgba(9,24,29,.50) 47%,rgba(12,32,24,.18) 100%);pointer-events:none}',
+          'color:#fff3a4':'color:#d8c889',
+          'color:#f1fbff':'color:#e3efed',
+          'color:#d7edf1':'color:#b9ccca',
+          'background:var(--gold);color:#26311d;box-shadow:0 10px 26px rgba(230,201,48,.24)':'background:var(--gold);color:#171a13;box-shadow:0 10px 26px rgba(199,169,74,.22)',
+          '.photo{min-height:450px;border-radius:24px;overflow:hidden;position:relative;background:#2c5d53;box-shadow:var(--shadow)}':'.photo{min-height:450px;border-radius:24px;overflow:hidden;position:relative;background:#142923;box-shadow:var(--shadow)}',
+          '.copy p{font-size:1.08rem;color:#56665c}':'.copy p{font-size:1.08rem;color:#b8c6bf}',
+          '.mission{font-family:Georgia,serif;font-size:1.75rem!important;color:#243d32!important;line-height:1.25}':'.mission{font-family:Georgia,serif;font-size:1.75rem!important;color:#e5dfc4!important;line-height:1.25}',
+          '.fact{padding:1.1rem;border:1px solid var(--line);border-radius:15px;background:rgba(255,255,255,.5)}':'.fact{padding:1.1rem;border:1px solid var(--line);border-radius:15px;background:rgba(255,255,255,.045)}',
+          '.fact span{display:block;font-size:.78rem;color:#68766c;margin-top:.2rem}':'.fact span{display:block;font-size:.78rem;color:#9caaa3;margin-top:.2rem}',
+          '.how{background:#20333b;color:#edf7f2}':'.how{background:#0b1419;color:#edf3ef}',
+          '.section-head p{max-width:590px;margin:0;color:#bbd1d1}':'.section-head p{max-width:590px;margin:0;color:#aebfbb}',
+          'background:linear-gradient(145deg,#2d5960,#17272d)':'background:linear-gradient(145deg,#15333a,#0d181e)',
+          '.step p{color:#c3d7d5;font-size:.92rem}':'.step p{color:#aebfbb;font-size:.92rem}',
+          '.world{background:linear-gradient(180deg,#dcefc4,#edf6e3)}':'.world{background:linear-gradient(180deg,#101d19,#18271e)}',
+          '.world-card{padding:2rem;border-radius:22px;background:rgba(255,255,255,.66);border:1px solid rgba(36,55,70,.13);box-shadow:0 12px 32px rgba(35,70,42,.08)}':'.world-card{padding:2rem;border-radius:22px;background:rgba(255,255,255,.045);border:1px solid rgba(231,238,233,.12);box-shadow:0 12px 32px rgba(0,0,0,.18)}',
+          '.world-card p{color:#56665c}':'.world-card p{color:#b7c6bd}',
+          '.quote{font-family:Georgia,serif;font-size:clamp(2rem,4vw,3.5rem);line-height:1.08;color:#27463a;margin:0}':'.quote{font-family:Georgia,serif;font-size:clamp(2rem,4vw,3.5rem);line-height:1.08;color:#d8c889;margin:0}',
+          '.accent{color:var(--sky-deep);font-weight:900}':'.accent{color:#79b6c8;font-weight:900}',
+          'background:#315d5a':'background:#102823',
+          'background:linear-gradient(120deg,#2586ad,#6aa64d)':'background:linear-gradient(120deg,#143b49,#284a2c)',
+          'color:#e5f4ef':'color:#d6e4de',
+          'footer{background:#15232b;color:#afc2c2;':'footer{background:#081014;color:#9fb0ae;',
+          'color:#e1efea':'color:#d6e4de',
+          'background:#f4f9ef;padding:1rem':'background:#101d21;padding:1rem',
+          'style="color:#2586ad"':'style="color:#79b6c8"'
+          }
+          for a,b in reps.items():
+              if a not in s:
+                  print('WARN missing:', a[:90])
+              s=s.replace(a,b)
+          p.write_text(s)
+          PY
+          rm -f .github/workflows/darken-7-moons.yml
+      - name: Commit safely
+        run: |
+          git config user.name "Gunpowder Studios"
+          git config user.email "38918114+gunpowderstudios@users.noreply.github.com"
+          git add -A
+          git commit -m "Darken 7 Moons fantasy palette"
+          git pull --rebase origin main
+          for i in 1 2 3; do git push origin main && break || { sleep 2; git pull --rebase origin main; }; done

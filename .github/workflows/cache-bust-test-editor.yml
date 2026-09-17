@@ -1,0 +1,42 @@
+name: Cache-bust TEST editor helper
+on:
+  push:
+    paths:
+      - .github/workflows/cache-bust-test-editor.yml
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Update TEST editor asset versions
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          for p in Path('.').rglob('*.html'):
+              s=p.read_text()
+              s=s.replace('staging-editor.js"></script>', 'staging-editor.js?v=3.5.1"></script>')
+              s=s.replace('staging-editor.js?v=3.5.1?v=3.5.1', 'staging-editor.js?v=3.5.1')
+              p.write_text(s)
+          p=Path('staging-editor.js')
+          s=p.read_text()
+          s=s.replace("new URL('staging-image-helper.js',current.src)", "new URL('staging-image-helper.js?v=2',current.src)")
+          s=s.replace("staging-image-helper.js?v=2?v=2", "staging-image-helper.js?v=2")
+          p.write_text(s)
+          PY
+      - name: Commit safely
+        run: |
+          git rm .github/workflows/cache-bust-test-editor.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "TEST editor - fix image filename helper caching"
+          for i in 1 2 3; do
+            git pull --rebase origin main || { git rebase --abort || true; sleep 2; continue; }
+            git push && exit 0
+            sleep 2
+          done
+          exit 1

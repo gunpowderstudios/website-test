@@ -1,0 +1,31 @@
+name: Bump TEST lightbox v2
+on:
+  push:
+    paths:
+      - '.github/workflows/bump-lightbox-v2.yml'
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bump lightbox cache version
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          for p in Path('.').rglob('*.html'):
+              s=p.read_text()
+              n=s.replace('lightbox.js?v=1','lightbox.js?v=2')
+              if n!=s:
+                  p.write_text(n)
+                  print('updated',p)
+          PY
+          rm -f .github/workflows/bump-lightbox-v2.yml
+      - name: Commit safely
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --cached --quiet || git commit -m 'TEST - load fixed lightbox v2'
+          git push

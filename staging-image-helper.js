@@ -13,71 +13,63 @@
   tip.style.cssText='position:fixed;z-index:100002;display:none;pointer-events:none;max-width:min(420px,calc(100vw - 24px));padding:8px 11px;border-radius:9px;background:rgba(12,12,11,.95);color:#fff;border:1px solid rgba(255,255,255,.18);box-shadow:0 8px 24px rgba(0,0,0,.32);font:800 12px/1.25 system-ui,-apple-system,sans-serif;letter-spacing:.01em;white-space:normal;overflow-wrap:anywhere';
   document.body.appendChild(tip);
 
-  const helperStyle=document.createElement('style');
-  helperStyle.textContent=`
+  const style=document.createElement('style');
+  style.textContent=`
     body.gps-image-pick{cursor:crosshair!important}
     body.gps-image-pick img{outline:2px dashed rgba(217,156,56,.72);outline-offset:-2px}
     body.gps-image-pick .feature,body.gps-image-pick .game-media,body.gps-image-pick .cta,body.gps-image-pick .hero-image,body.gps-image-pick .hero-image-card,body.gps-image-pick .photo,body.gps-image-pick .gallery-item,body.gps-image-pick .showcase-item,body.gps-image-pick .hero-visual{cursor:crosshair}
-    #gpsImageEditOverlay{position:fixed;inset:0;z-index:100005;display:none;place-items:center;padding:18px;background:rgba(0,0,0,.72);font-family:system-ui,-apple-system,sans-serif}
-    #gpsImageEditOverlay.open{display:grid}
-    #gpsImageEditCard{width:min(560px,100%);padding:22px;border-radius:18px;background:#191816;color:#fff;box-shadow:0 20px 70px rgba(0,0,0,.5)}
-    #gpsImageEditCard h3{margin:0 0 7px;font:800 20px/1.2 system-ui,-apple-system,sans-serif}
-    #gpsImageEditCard p{margin:0 0 14px;color:#cfc5b6;font:500 13px/1.5 system-ui,-apple-system,sans-serif}
-    #gpsImageEditCard label{display:block;margin:12px 0 6px;color:#eee6db;font:800 12px/1.2 system-ui,-apple-system,sans-serif}
-    #gpsImageEditCard input[type="text"]{box-sizing:border-box;width:100%;padding:11px 12px;border:1px solid #56514a;border-radius:10px;background:#0f0e0d;color:#fff;font:600 14px/1 system-ui,-apple-system,sans-serif}
-    #gpsImageEditCard input[type="file"]{box-sizing:border-box;width:100%;padding:10px;border:1px solid #56514a;border-radius:10px;background:#0f0e0d;color:#d9d0c4;font:600 12px/1.2 system-ui,-apple-system,sans-serif}
-    #gpsImageEditCard .gps-image-hint{margin-top:8px;color:#a99d8d;font-size:11px}
-    #gpsImageEditCard .gps-image-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:16px}
-    #gpsImageEditCard button{border:1px solid rgba(255,255,255,.18);border-radius:999px;background:#292724;color:#fff;padding:10px 14px;font:800 12px/1 system-ui,-apple-system,sans-serif;cursor:pointer}
-    #gpsImageEditCard button:hover{background:#3a3631}
-    #gpsImageEditCard button:disabled{opacity:.55;cursor:wait}
-    #gpsImageEditCard .gps-image-save{background:#376a42;border-color:#4e875a}
-    #gpsImageEditError{display:none;margin-top:10px;padding:9px 10px;border-radius:9px;background:#5e211d;color:#fff;font:700 12px/1.35 system-ui,-apple-system,sans-serif}
-    #gpsImageEditError.show{display:block}
+    #gpsImagePathOverlay{position:fixed;inset:0;z-index:100005;display:none;place-items:center;padding:18px;background:rgba(0,0,0,.72);font-family:system-ui,-apple-system,sans-serif}
+    #gpsImagePathOverlay.open{display:grid}
+    #gpsImagePathCard{width:min(590px,100%);padding:22px;border-radius:18px;background:#191816;color:#fff;box-shadow:0 20px 70px rgba(0,0,0,.5)}
+    #gpsImagePathCard h3{margin:0 0 7px;font:800 20px/1.2 system-ui,-apple-system,sans-serif}
+    #gpsImagePathCard p{margin:0 0 14px;color:#cfc5b6;font:500 13px/1.5 system-ui,-apple-system,sans-serif}
+    #gpsImagePathCard label{display:block;margin:12px 0 6px;color:#eee6db;font:800 12px/1.2 system-ui,-apple-system,sans-serif}
+    #gpsImagePathCard input{box-sizing:border-box;width:100%;padding:12px 13px;border:1px solid #56514a;border-radius:10px;background:#0f0e0d;color:#fff;font:600 14px/1 system-ui,-apple-system,sans-serif}
+    #gpsImagePathCard .gps-hint{margin-top:8px;color:#a99d8d;font-size:11px;line-height:1.45}
+    #gpsImagePathCard .gps-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:16px}
+    #gpsImagePathCard button{border:1px solid rgba(255,255,255,.18);border-radius:999px;background:#292724;color:#fff;padding:10px 14px;font:800 12px/1 system-ui,-apple-system,sans-serif;cursor:pointer}
+    #gpsImagePathCard button:hover{background:#3a3631}
+    #gpsImagePathCard button:disabled{opacity:.55;cursor:wait}
+    #gpsImagePathCard .gps-save{background:#376a42;border-color:#4e875a}
+    #gpsImagePathError{display:none;margin-top:10px;padding:9px 10px;border-radius:9px;background:#5e211d;color:#fff;font:700 12px/1.35 system-ui,-apple-system,sans-serif}
+    #gpsImagePathError.show{display:block}
   `;
-  document.head.appendChild(helperStyle);
+  document.head.appendChild(style);
 
   const overlay=document.createElement('div');
-  overlay.id='gpsImageEditOverlay';
+  overlay.id='gpsImagePathOverlay';
   overlay.innerHTML=`
-    <div id="gpsImageEditCard" role="dialog" aria-modal="true" aria-labelledby="gpsImageEditTitle">
-      <h3 id="gpsImageEditTitle">Change image</h3>
-      <p id="gpsImageEditCurrent"></p>
-      <label for="gpsImageEditName">Filename</label>
-      <input id="gpsImageEditName" type="text" autocomplete="off" spellcheck="false">
-      <label for="gpsImageEditFile">New image <span style="font-weight:500;color:#a99d8d">(optional)</span></label>
-      <input id="gpsImageEditFile" type="file" accept="image/jpeg,image/png,.jpg,.jpeg,.png">
-      <div class="gps-image-hint">Keep the filename to overwrite. Change it to create a new image and update this page. With no new file selected, changing the name copies the existing image.</div>
-      <div id="gpsImageEditError"></div>
-      <div class="gps-image-actions">
+    <div id="gpsImagePathCard" role="dialog" aria-modal="true" aria-labelledby="gpsImagePathTitle">
+      <h3 id="gpsImagePathTitle">Change image</h3>
+      <p id="gpsImagePathCurrent"></p>
+      <label for="gpsImagePathInput">Repository image path</label>
+      <input id="gpsImagePathInput" type="text" autocomplete="off" spellcheck="false" placeholder="images/my-new-image.jpg">
+      <div class="gps-hint">Upload the image to <b>website-test</b> first, then enter its repo path here — for example <b>images/bag-of-dungeon-heroes-new.jpg</b>. The editor checks that the file exists before changing the page.</div>
+      <div id="gpsImagePathError"></div>
+      <div class="gps-actions">
         <button type="button" data-image-action="cancel">Cancel</button>
-        <button type="button" class="gps-image-save" data-image-action="save">Save image</button>
+        <button type="button" class="gps-save" data-image-action="save">Use image</button>
       </div>
     </div>`;
   document.body.appendChild(overlay);
 
-  const nameInput=overlay.querySelector('#gpsImageEditName');
-  const fileInput=overlay.querySelector('#gpsImageEditFile');
-  const currentText=overlay.querySelector('#gpsImageEditCurrent');
-  const errorBox=overlay.querySelector('#gpsImageEditError');
-  const modalSaveBtn=overlay.querySelector('[data-image-action="save"]');
+  const pathInput=overlay.querySelector('#gpsImagePathInput');
+  const currentText=overlay.querySelector('#gpsImagePathCurrent');
+  const errorBox=overlay.querySelector('#gpsImagePathError');
+  const saveBtn=overlay.querySelector('[data-image-action="save"]');
 
   let touchTimer=null;
-  let replaceMode=false;
+  let changeMode=false;
   let selectedTarget=null;
-  let replaceBtn=null;
+  let changeBtn=null;
   let statusEl=null;
 
   function filenameFromUrl(url){
     if(!url||url==='none')return '';
     try{
-      const clean=String(url).replace(/^url\(["']?/,'').replace(/["']?\)$/,'');
-      const parsed=new URL(clean,location.href);
+      const parsed=new URL(String(url).replace(/^url\(["']?/,'').replace(/["']?\)$/,''),location.href);
       return decodeURIComponent(parsed.pathname.split('/').pop()||'');
-    }catch(e){
-      const clean=String(url).replace(/^url\(["']?/,'').replace(/["']?\)$/,'').split('?')[0].split('#')[0];
-      return decodeURIComponent(clean.split('/').pop()||'');
-    }
+    }catch(e){return '';}
   }
 
   function repoPathFromUrl(url){
@@ -102,9 +94,7 @@
     return rel;
   }
 
-  function encodeRepoPath(path){
-    return path.split('/').map(encodeURIComponent).join('/');
-  }
+  function encodeRepoPath(path){return path.split('/').map(encodeURIComponent).join('/');}
 
   function firstBackgroundUrl(el){
     const bg=getComputedStyle(el).backgroundImage;
@@ -113,14 +103,21 @@
     return match&&match[2]?match[2]:'';
   }
 
+  function pageImages(){
+    return Array.from(document.querySelectorAll('img')).filter(img=>!img.closest('#gpsLightbox,#gpsImagePathOverlay,#gpsEditorPanel,#gpsTokenOverlay'));
+  }
+
   function targetFromElement(el){
     if(!el||!el.closest)return null;
-    if(el.closest('#gpsEditorPanel,#gpsEditorToggle,#gpsTokenOverlay,#gpsImageNameTip,#gpsImageEditOverlay,#gpsLightbox'))return null;
+    if(el.closest('#gpsEditorPanel,#gpsEditorToggle,#gpsTokenOverlay,#gpsImageNameTip,#gpsImagePathOverlay,#gpsLightbox'))return null;
 
     if(el.tagName==='IMG'){
       const url=el.currentSrc||el.getAttribute('src')||'';
       const repoPath=repoPathFromUrl(url);
-      if(repoPath)return {kind:'img',element:el,url,repoPath,filename:filenameFromUrl(url)};
+      if(repoPath){
+        const imgs=pageImages();
+        return {kind:'img',element:el,url,repoPath,filename:filenameFromUrl(url),imageIndex:imgs.indexOf(el),oldAttr:el.getAttribute('src')||''};
+      }
     }
 
     const visual=el.closest('.image-slot,.slot,.game-media,.feature,.cta,.hero-image,.hero-image-card,.photo,.gallery-item,.showcase-item,.hero-visual');
@@ -129,7 +126,10 @@
       if(childImg){
         const url=childImg.currentSrc||childImg.getAttribute('src')||'';
         const repoPath=repoPathFromUrl(url);
-        if(repoPath)return {kind:'img',element:childImg,url,repoPath,filename:filenameFromUrl(url)};
+        if(repoPath){
+          const imgs=pageImages();
+          return {kind:'img',element:childImg,url,repoPath,filename:filenameFromUrl(url),imageIndex:imgs.indexOf(childImg),oldAttr:childImg.getAttribute('src')||''};
+        }
       }
     }
 
@@ -145,15 +145,7 @@
     return null;
   }
 
-  function imageNameFor(el){
-    const target=targetFromElement(el);
-    return target?target.filename:'';
-  }
-
-  function hideTip(){
-    tip.style.display='none';
-    tip.setAttribute('aria-hidden','true');
-  }
+  function hideTip(){tip.style.display='none';tip.setAttribute('aria-hidden','true');}
 
   function showTip(name,x,y){
     if(!name){hideTip();return;}
@@ -162,62 +154,44 @@
     tip.setAttribute('aria-hidden','false');
     const pad=14;
     const r=tip.getBoundingClientRect();
-    let left=x+16;
-    let top=y+16;
+    let left=x+16, top=y+16;
     if(left+r.width>window.innerWidth-pad)left=Math.max(pad,x-r.width-16);
     if(top+r.height>window.innerHeight-pad)top=Math.max(pad,y-r.height-16);
-    tip.style.left=left+'px';
-    tip.style.top=top+'px';
+    tip.style.left=left+'px';tip.style.top=top+'px';
   }
 
   function setStatus(text){if(statusEl)statusEl.textContent=text;}
 
-  function setReplaceMode(on){
-    replaceMode=on;
+  function setChangeMode(on){
+    changeMode=on;
     document.body.classList.toggle('gps-image-pick',on);
-    if(replaceBtn)replaceBtn.textContent=on?'Cancel image replace':'Replace image';
+    if(changeBtn)changeBtn.textContent=on?'Cancel image change':'Change image';
     setStatus(on?'Click the image or image panel you want to change':'TEST editor · Save commits to GitHub');
   }
 
   function showModal(target){
     selectedTarget=target;
-    currentText.textContent='Current image: '+target.filename;
-    nameInput.value=target.filename;
-    fileInput.value='';
-    errorBox.textContent='';
-    errorBox.classList.remove('show');
+    currentText.textContent='Current repo image: '+target.repoPath;
+    pathInput.value=target.repoPath;
+    errorBox.textContent='';errorBox.classList.remove('show');
     overlay.classList.add('open');
-    setTimeout(()=>nameInput.focus(),0);
+    setTimeout(()=>{pathInput.focus();pathInput.select();},0);
   }
 
   function closeModal(){
     overlay.classList.remove('open');
-    errorBox.textContent='';
-    errorBox.classList.remove('show');
-    fileInput.value='';
+    errorBox.textContent='';errorBox.classList.remove('show');
     selectedTarget=null;
   }
 
-  function modalError(text){
-    errorBox.textContent=text;
-    errorBox.classList.add('show');
-  }
+  function modalError(text){errorBox.textContent=text;errorBox.classList.add('show');}
 
-  function tokenForUpload(){
+  function tokenForChange(){
     let token=sessionStorage.getItem(TOKEN_KEY)||'';
     if(token)return token;
-    token=window.prompt('Paste your fine-grained GitHub token for website-test. It will only be kept for this browser session.')||'';
-    token=token.trim();
+    token=(window.prompt('Paste your fine-grained GitHub token for website-test. It will only be kept for this browser session.')||'').trim();
     if(token)sessionStorage.setItem(TOKEN_KEY,token);
     return token;
-  }
-
-  function bytesToBase64(buffer){
-    const bytes=new Uint8Array(buffer);
-    let binary='';
-    const chunk=0x8000;
-    for(let i=0;i<bytes.length;i+=chunk){binary+=String.fromCharCode.apply(null,bytes.subarray(i,i+chunk));}
-    return btoa(binary);
   }
 
   function decodeBase64Utf8(value){
@@ -228,7 +202,11 @@
   }
 
   function encodeBase64Utf8(value){
-    return bytesToBase64(new TextEncoder().encode(value).buffer);
+    const bytes=new TextEncoder().encode(value);
+    let binary='';
+    const chunk=0x8000;
+    for(let i=0;i<bytes.length;i+=chunk)binary+=String.fromCharCode.apply(null,bytes.subarray(i,i+chunk));
+    return btoa(binary);
   }
 
   async function githubJson(url,options,token,allow404){
@@ -248,59 +226,59 @@
     return response.json();
   }
 
-  function normaliseFilename(raw,file,originalFilename){
-    let name=(raw||'').trim();
-    if(!name)name=originalFilename;
-    if(name.includes('/')||name.includes('\\')||name.includes('..'))throw new Error('Use a filename only, without folders or “..”.');
-    if(!/\.(jpe?g|png)$/i.test(name)){
-      if(file&&file.type==='image/png')name+='.png';
-      else if(file&&file.type==='image/jpeg')name+='.jpg';
-      else{
-        const oldExt=(originalFilename.match(/\.(jpe?g|png)$/i)||[])[0]||'.jpg';
-        name+=oldExt;
+  function normaliseRepoPath(raw){
+    let path=(raw||'').trim();
+    try{
+      if(/^https?:\/\//i.test(path)){
+        const u=new URL(path);
+        path=decodeURIComponent(u.pathname);
+        const marker='/'+REPO+'/';
+        if(path.includes(marker))path=path.split(marker).pop();
       }
+    }catch(e){}
+    path=path.replace(/^\/+/, '');
+    if(path.startsWith(REPO+'/'))path=path.slice(REPO.length+1);
+    if(path.startsWith('website-test/'))path=path.slice('website-test/'.length);
+    if(path.includes('..'))throw new Error('Do not use “..” in the repo path.');
+    if(!/^[-A-Za-z0-9_ .\/]+\.(jpe?g|png)$/i.test(path))throw new Error('Enter a JPG or PNG path such as images/my-image.jpg.');
+    return path;
+  }
+
+  function relativeReference(pagePath,targetPath){
+    const from=pagePath.split('/');from.pop();
+    const to=targetPath.split('/');
+    let i=0;
+    while(i<from.length&&i<to.length&&from[i]===to[i])i++;
+    return '../'.repeat(from.length-i)+to.slice(i).join('/');
+  }
+
+  function escapeRegExp(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
+
+  function updateSourceReference(source,target,newRelative){
+    if(target.kind==='img'){
+      const doc=new DOMParser().parseFromString(source,'text/html');
+      const imgs=Array.from(doc.querySelectorAll('img'));
+      const img=imgs[target.imageIndex];
+      if(!img)throw new Error('Could not match that image in the page. Reload and try again.');
+      const old=img.getAttribute('src')||'';
+      img.setAttribute('src',newRelative);
+      const oldTag=img.outerHTML.replace('src="'+newRelative.replace(/&/g,'&amp;')+'"','src="'+old+'"');
+      const newTag=img.outerHTML;
+      if(source.includes(oldTag))return source.replace(oldTag,newTag);
+
+      const oldEsc=escapeRegExp(old);
+      const srcRe=new RegExp('(\\bsrc\\s*=\\s*["\'])'+oldEsc+'(["\'])');
+      if(srcRe.test(source))return source.replace(srcRe,'$1'+newRelative+'$2');
+      throw new Error('Could not find the current image reference in the page. Reload and try again.');
     }
-    if(!/^[A-Za-z0-9._ -]+\.(jpe?g|png)$/i.test(name))throw new Error('Use letters, numbers, spaces, hyphens or underscores in the filename.');
-    return name;
+
+    const oldFilename=escapeRegExp(target.filename);
+    const refRe=new RegExp('(?:\\.\\.\\/|\\.\\/|[A-Za-z0-9_. -]+\\/)*[A-Za-z0-9_. -]*'+oldFilename);
+    if(!refRe.test(source))throw new Error('Could not find the background image reference in the page.');
+    return source.replace(refRe,newRelative);
   }
 
-  function typeMatchesFilename(file,filename){
-    if(!file)return true;
-    if(/\.png$/i.test(filename))return file.type==='image/png';
-    return file.type==='image/jpeg';
-  }
-
-  async function updatePageReference(token,oldFilename,newFilename){
-    if(oldFilename===newFilename)return;
-    const pagePath=pageRepoPath();
-    const pageApi='https://api.github.com/repos/'+OWNER+'/'+REPO+'/contents/'+encodeRepoPath(pagePath);
-    const page=await githubJson(pageApi+'?ref='+encodeURIComponent(BRANCH),{method:'GET'},token,false);
-    const source=decodeBase64Utf8(page.content);
-    if(!source.includes(oldFilename))throw new Error('Could not find '+oldFilename+' in this page. Reload and try again.');
-    const updated=source.split(oldFilename).join(newFilename);
-    await githubJson(pageApi,{
-      method:'PUT',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        message:'Editor image reference: '+oldFilename+' → '+newFilename,
-        content:encodeBase64Utf8(updated),
-        sha:page.sha,
-        branch:BRANCH
-      })
-    },token,false);
-  }
-
-  function previewTarget(target,file,newRepoPath){
-    if(file){
-      const preview=URL.createObjectURL(file);
-      if(target.kind==='img'){
-        target.element.onerror=null;
-        target.element.src=preview;
-      }else{
-        target.element.style.backgroundImage='url("'+preview+'")';
-      }
-      return;
-    }
+  function previewTarget(target,newRepoPath){
     const liveUrl=location.origin+PROJECT_ROOT+newRepoPath+'?v='+Date.now();
     if(target.kind==='img'){
       target.element.onerror=null;
@@ -310,118 +288,74 @@
     }
   }
 
-  async function saveImageChange(){
+  async function savePathChange(){
     if(!selectedTarget)return;
     const target=selectedTarget;
-    const file=fileInput.files&&fileInput.files[0]||null;
-    let newFilename;
-    try{
-      newFilename=normaliseFilename(nameInput.value,file,target.filename);
-    }catch(error){
-      modalError(error.message);
-      return;
-    }
+    let newRepoPath;
+    try{newRepoPath=normaliseRepoPath(pathInput.value);}catch(error){modalError(error.message);return;}
+    if(newRepoPath===target.repoPath){modalError('That is already the current image path.');return;}
 
-    if(!typeMatchesFilename(file,newFilename)){
-      modalError('The file type must match the filename extension ('+(/\.png$/i.test(newFilename)?'PNG':'JPG')+').');
-      return;
-    }
+    const token=tokenForChange();
+    if(!token){modalError('No GitHub token is available for this browser session.');return;}
 
-    if(!file&&newFilename===target.filename){
-      modalError('Choose a new image, change the filename, or both.');
-      return;
-    }
-
-    const token=tokenForUpload();
-    if(!token){modalError('Image change cancelled · no GitHub token.');return;}
-
-    const oldPath=target.repoPath;
-    const folder=oldPath.includes('/')?oldPath.slice(0,oldPath.lastIndexOf('/')+1):'';
-    const newPath=folder+newFilename;
-    const oldApi='https://api.github.com/repos/'+OWNER+'/'+REPO+'/contents/'+encodeRepoPath(oldPath);
-    const newApi='https://api.github.com/repos/'+OWNER+'/'+REPO+'/contents/'+encodeRepoPath(newPath);
-
-    modalSaveBtn.disabled=true;
-    modalSaveBtn.textContent='Saving…';
-    if(replaceBtn)replaceBtn.disabled=true;
-    setStatus('Saving image change to TEST GitHub…');
+    saveBtn.disabled=true;saveBtn.textContent='Checking…';
     errorBox.classList.remove('show');
-
     try{
-      const oldFile=await githubJson(oldApi+'?ref='+encodeURIComponent(BRANCH),{method:'GET'},token,true);
-      let content;
+      const imageApi='https://api.github.com/repos/'+OWNER+'/'+REPO+'/contents/'+encodeRepoPath(newRepoPath);
+      const exists=await githubJson(imageApi+'?ref='+encodeURIComponent(BRANCH),{method:'GET'},token,true);
+      if(!exists||exists.type==='dir')throw new Error('That image was not found in website-test. Upload it to the repo first, then try again.');
 
-      if(file){
-        content=bytesToBase64(await file.arrayBuffer());
-      }else{
-        if(!oldFile||!oldFile.content)throw new Error('The existing image is not in GitHub yet. Choose an image file to upload.');
-        content=(oldFile.content||'').replace(/\n/g,'');
-      }
+      const pagePath=pageRepoPath();
+      const pageApi='https://api.github.com/repos/'+OWNER+'/'+REPO+'/contents/'+encodeRepoPath(pagePath);
+      const page=await githubJson(pageApi+'?ref='+encodeURIComponent(BRANCH),{method:'GET'},token,false);
+      const source=decodeBase64Utf8(page.content);
+      const newRelative=relativeReference(pagePath,newRepoPath);
+      const updated=updateSourceReference(source,target,newRelative);
 
-      const destination=oldPath===newPath?oldFile:await githubJson(newApi+'?ref='+encodeURIComponent(BRANCH),{method:'GET'},token,true);
-      if(oldPath!==newPath&&destination){
-        const okay=window.confirm(newFilename+' already exists in TEST. Replace that file?');
-        if(!okay)throw new Error('Save cancelled.');
-      }
-
-      const imageBody={
-        message:(oldPath===newPath?'Editor image update: ':'Editor image upload: ')+newPath,
-        content,
-        branch:BRANCH
-      };
-      if(destination&&destination.sha)imageBody.sha=destination.sha;
-
-      await githubJson(newApi,{
+      saveBtn.textContent='Saving…';
+      await githubJson(pageApi,{
         method:'PUT',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify(imageBody)
+        body:JSON.stringify({
+          message:'Editor image path: '+target.repoPath+' → '+newRepoPath,
+          content:encodeBase64Utf8(updated),
+          sha:page.sha,
+          branch:BRANCH
+        })
       },token,false);
 
-      if(oldPath!==newPath){
-        await updatePageReference(token,target.filename,newFilename);
-      }
-
-      previewTarget(target,file,newPath);
-      target.repoPath=newPath;
-      target.filename=newFilename;
-      setStatus((oldPath===newPath?'Image overwritten':'New image saved and page updated')+' ✓ · TEST Pages will update shortly');
+      previewTarget(target,newRepoPath);
       closeModal();
-      setReplaceMode(false);
+      setChangeMode(false);
+      setStatus('Image path saved to TEST GitHub ✓ · '+newRepoPath);
     }catch(error){
       if(error.status===401||error.status===403){
         sessionStorage.removeItem(TOKEN_KEY);
         modalError('GitHub rejected the token · check Contents: Read and write.');
-        setStatus('GitHub rejected the token · check Contents: Read and write');
       }else if(error.status===409){
-        modalError('GitHub changed while saving. Reload and try again.');
-        setStatus('GitHub changed while saving · reload and try again');
-      }else{
-        modalError(error.message);
-        setStatus('Image change failed · '+error.message);
-      }
-      console.error('TEST image change failed',error);
+        modalError('The page changed in GitHub. Reload this page and try again.');
+      }else modalError(error.message);
+      console.error('TEST image path change failed',error);
     }finally{
-      modalSaveBtn.disabled=false;
-      modalSaveBtn.textContent='Save image';
-      if(replaceBtn)replaceBtn.disabled=false;
+      saveBtn.disabled=false;saveBtn.textContent='Use image';
     }
   }
 
   function installEditorButton(){
     const panel=document.querySelector('#gpsEditorPanel');
     if(!panel)return false;
-    if(panel.querySelector('[data-action="replace-image"]'))return true;
     statusEl=panel.querySelector('.gps-status');
-    replaceBtn=document.createElement('button');
-    replaceBtn.type='button';
-    replaceBtn.dataset.action='replace-image';
-    replaceBtn.textContent='Replace image';
+    const old=panel.querySelector('[data-action="replace-image"]');
+    if(old)old.remove();
+    const existing=panel.querySelector('[data-action="change-image"]');
+    if(existing){changeBtn=existing;return true;}
+    changeBtn=document.createElement('button');
+    changeBtn.type='button';
+    changeBtn.dataset.action='change-image';
+    changeBtn.textContent='Change image';
     const before=panel.querySelector('[data-action="forget"]')||statusEl;
-    panel.insertBefore(replaceBtn,before||null);
-    replaceBtn.addEventListener('click',function(e){
-      e.preventDefault();e.stopPropagation();
-      setReplaceMode(!replaceMode);
-    });
+    panel.insertBefore(changeBtn,before||null);
+    changeBtn.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();setChangeMode(!changeMode);});
     return true;
   }
 
@@ -431,45 +365,41 @@
   }
 
   document.addEventListener('mousemove',function(e){
-    const name=imageNameFor(e.target);
-    if(!name){hideTip();return;}
-    showTip(name,e.clientX,e.clientY);
+    const target=targetFromElement(e.target);
+    if(!target){hideTip();return;}
+    showTip(target.repoPath,e.clientX,e.clientY);
   },{passive:true});
 
   document.addEventListener('mouseleave',hideTip);
 
   document.addEventListener('touchstart',function(e){
-    const name=imageNameFor(e.target);
-    if(!name)return;
-    const t=e.touches&&e.touches[0];
-    if(!t)return;
-    showTip(name,t.clientX,t.clientY);
-    clearTimeout(touchTimer);
-    touchTimer=setTimeout(hideTip,2200);
+    const target=targetFromElement(e.target);
+    if(!target)return;
+    const t=e.touches&&e.touches[0];if(!t)return;
+    showTip(target.repoPath,t.clientX,t.clientY);
+    clearTimeout(touchTimer);touchTimer=setTimeout(hideTip,2200);
   },{passive:true});
 
   document.addEventListener('click',function(e){
-    if(!replaceMode)return;
-    if(e.target.closest&&e.target.closest('#gpsEditorPanel,#gpsEditorToggle,#gpsTokenOverlay,#gpsImageEditOverlay'))return;
+    if(!changeMode)return;
+    if(e.target.closest&&e.target.closest('#gpsEditorPanel,#gpsEditorToggle,#gpsTokenOverlay,#gpsImagePathOverlay'))return;
     const target=targetFromElement(e.target);
     if(!target){setStatus('No local TEST image found there · click another image');return;}
-    e.preventDefault();
-    e.stopPropagation();
-    setReplaceMode(false);
-    showModal(target);
+    e.preventDefault();e.stopPropagation();showModal(target);
   },true);
 
   overlay.addEventListener('click',function(e){
-    const action=e.target.closest&&e.target.closest('button[data-image-action]');
-    if(action){
-      if(action.dataset.imageAction==='cancel')closeModal();
-      if(action.dataset.imageAction==='save')saveImageChange();
+    const btn=e.target.closest('button[data-image-action]');
+    if(btn){
+      if(btn.dataset.imageAction==='cancel')closeModal();
+      if(btn.dataset.imageAction==='save')savePathChange();
       return;
     }
     if(e.target===overlay)closeModal();
   });
 
-  document.addEventListener('keydown',function(e){
-    if(e.key==='Escape'&&overlay.classList.contains('open'))closeModal();
+  pathInput.addEventListener('keydown',function(e){
+    if(e.key==='Enter'){e.preventDefault();savePathChange();}
+    if(e.key==='Escape'){e.preventDefault();closeModal();}
   });
 })();

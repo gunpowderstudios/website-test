@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="build-version" content="v2.7">
+<title>Bag of Dungeon | Fantasy Dungeon Crawler Board Game</title>
+<meta name="description" content="Bag of Dungeon is an easy-to-learn fantasy dungeon crawler board game for 1–4 players. Set up in 5 minutes, build a different dungeon every game and escape the Red Dragon.">
+<meta name="theme-color" content="#11100e">
+<style>
+:root{--ink:#171511;--paper:#f4ead8;--cream:#fff8e8;--gold:#d99c38;--red:#a62820;--muted:#756b5b;--line:rgba(23,21,17,.14);--max:1180px;--shadow:0 22px 60px rgba(0,0,0,.18)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--ink);background:#f5ecdc;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.55}a{color:inherit}.wrap{width:min(var(--max),calc(100% - 36px));margin-inline:auto}
+.devbar{position:relative;background:#0d0c0a;color:#d8cbb7;font-size:.8rem;text-align:center;padding:.5rem 3rem}.devbar:after{content:"v2.7";position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:.67rem;font-weight:850;letter-spacing:.08em;color:rgba(255,255,255,.5)}
+header{position:sticky;top:0;z-index:20;background:rgba(248,241,228,.95);backdrop-filter:blur(12px);border-bottom:1px solid rgba(23,21,17,.1)}.nav{min-height:78px;display:flex;align-items:center;justify-content:space-between;gap:1.2rem}.brand{display:flex;align-items:center;gap:.8rem;text-decoration:none;font-weight:900;letter-spacing:.03em;text-transform:uppercase;line-height:1}.brand img{width:48px;height:48px;display:block;object-fit:contain}.brand small{display:block;font-size:.67rem;font-weight:650;color:var(--muted);letter-spacing:.14em;margin-top:.38rem}.links{display:flex;align-items:center;gap:1rem;font-weight:800;font-size:.92rem}.links a{text-decoration:none}.shop{padding:.72rem 1rem;border-radius:999px;color:white}.amazon{background:#232f3e}.etsy{background:#b62920}.menu{display:none;border:0;background:transparent;font-size:1.55rem}
+.hero{padding:0;position:relative;overflow:hidden;color:#fff5e2;background:radial-gradient(circle at 71% 37%,rgba(217,156,56,.23),transparent 18rem),radial-gradient(circle at 93% 82%,rgba(166,40,32,.26),transparent 25rem),linear-gradient(125deg,#0e0d0b 0%,#251c12 55%,#100a08 100%)}.hero:before,.hero:after{content:"";position:absolute;border:1px solid rgba(217,156,56,.13);transform:rotate(45deg);border-radius:60px}.hero:before{width:440px;height:440px;right:-130px;top:-220px}.hero:after{width:620px;height:620px;right:100px;bottom:-450px}.hero-grid{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(340px,.95fr);gap:4rem;align-items:center;padding:40px 0 76px}.eyebrow{display:flex;align-items:center;gap:.6rem;color:#efc77c;text-transform:uppercase;letter-spacing:.16em;font-size:.76rem;font-weight:900;margin-bottom:1rem}.eyebrow:before{content:"";width:42px;height:2px;background:var(--gold)}h1,h2,h3{font-family:Georgia,"Times New Roman",serif;line-height:1.03;margin:0}h1{font-size:clamp(3.5rem,7vw,6.6rem);letter-spacing:-.05em;max-width:720px}.hero .lead{font-size:clamp(1.1rem,1.8vw,1.35rem);max-width:680px;color:#e1d4c0;margin:1.4rem 0 .9rem}.hero .sub{max-width:650px;color:#bfb19d;margin:0 0 1.7rem}.actions{display:flex;flex-wrap:wrap;gap:.8rem}.btn{display:inline-flex;align-items:center;justify-content:center;min-height:50px;padding:.82rem 1.25rem;border-radius:999px;text-decoration:none;font-weight:900;transition:.18s ease}.btn:hover{transform:translateY(-2px)}.btn-gold{background:var(--gold);color:#21170a;box-shadow:0 10px 26px rgba(217,156,56,.23)}.btn-outline{border:1px solid rgba(255,255,255,.28);color:white;background:rgba(255,255,255,.05)}.hero-image img{display:block;width:100%;max-height:570px;object-fit:contain;filter:drop-shadow(0 30px 55px rgba(0,0,0,.42))}.quick{display:flex;flex-wrap:wrap;gap:.55rem;margin-top:1.5rem}.quick span{padding:.48rem .72rem;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.05);font-size:.78rem;font-weight:800;color:#e3d7c5}
+section{padding:5.5rem 0}.video-section{padding:40px 0 0}.video-shell{position:relative;overflow:hidden;border-radius:24px;background:#0d0c0a;box-shadow:var(--shadow)}.video-shell video{display:block;width:100%;height:auto}.video-controls{position:absolute;right:15px;bottom:15px;display:flex;gap:10px;z-index:2}.video-control{width:44px;height:44px;padding:0;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.42);backdrop-filter:blur(6px);border-radius:50%;display:grid;place-items:center;cursor:pointer;color:white;transition:.18s ease}.video-control:hover{background:rgba(0,0,0,.62);transform:translateY(-1px)}.video-control:focus-visible{outline:2px solid white;outline-offset:3px}.video-control svg{display:block}.intro-section{padding:40px 0 5.5rem}.intro{display:grid;grid-template-columns:1.04fr .96fr;gap:4.5rem;align-items:center}.photo{border-radius:24px;overflow:hidden;box-shadow:var(--shadow);background:#201610}.photo img{width:100%;height:100%;min-height:440px;display:block;object-fit:cover}.copy h2,.section-head h2{font-size:clamp(2.5rem,4.7vw,4.8rem);letter-spacing:-.045em}.copy p{font-size:1.08rem;color:#63594b}.mission{font-family:Georgia,serif;font-size:1.7rem!important;color:#2b2118!important;line-height:1.25}.facts{display:grid;grid-template-columns:repeat(4,1fr);gap:.85rem;margin-top:2rem}.fact{padding:1.1rem;border:1px solid var(--line);border-radius:15px;background:rgba(255,255,255,.5)}.fact strong{display:block;font-size:1.15rem}.fact span{display:block;font-size:.78rem;color:#766b5b;margin-top:.2rem}
+.dark{background:#151310;color:#f7ecd6}.section-head{display:flex;align-items:end;justify-content:space-between;gap:2rem;margin-bottom:2.3rem}.section-head p{max-width:570px;margin:0;color:#b9ad9a}.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}.step{padding:1.6rem;border-radius:18px;border:1px solid rgba(255,255,255,.1);background:linear-gradient(145deg,#242019,#11100e);min-height:250px}.step b{display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:var(--gold);color:#23170a;margin-bottom:1.5rem}.step h3{font-size:1.7rem}.step p{color:#bdb19e;font-size:.92rem}
+.gallery{display:grid;grid-template-columns:1.3fr .85fr .85fr;gap:1rem;margin-top:2rem}.gallery-item{min-height:310px;border-radius:20px;overflow:hidden;position:relative;background:#211a14;border:1px solid rgba(255,255,255,.09)}.gallery-item img{display:block;width:100%;height:100%;min-height:310px;object-fit:cover}.image-slot{display:grid;place-items:center;text-align:center;padding:2rem;background:linear-gradient(145deg,#28231d,#171410);color:#8f8373}.image-slot>img{position:absolute;inset:0;width:100%;height:100%;min-height:0;object-fit:cover;z-index:2}.image-slot>div{position:relative;z-index:1}.image-slot strong{display:block;color:#d7c4a4;font-size:.9rem;text-transform:uppercase;letter-spacing:.09em}.image-slot small{display:block;margin-top:.45rem;color:#84786a}
+.callout{background:linear-gradient(120deg,#4a1512,#150e0c);color:#fff5e5}.callout-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:4rem;align-items:center}.callout h2{font-size:clamp(2.6rem,5vw,5rem);letter-spacing:-.045em}.callout p{font-size:1.08rem;color:#d7c7b4;max-width:700px}.play-card{padding:2rem;border-radius:24px;border:1px solid rgba(255,255,255,.13);background:rgba(255,255,255,.06);box-shadow:0 22px 55px rgba(0,0,0,.26)}.play-card strong{display:block;font-family:Georgia,serif;font-size:2.2rem;margin-bottom:.6rem}.play-card p{font-size:.95rem;margin-top:0}.play-card .btn{margin-top:.7rem}
+.more{background:#f8f1e4}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}.card{display:flex;flex-direction:column;min-height:260px;padding:1.6rem;border-radius:18px;text-decoration:none;background:#fffaf0;border:1px solid var(--line);box-shadow:0 12px 32px rgba(56,37,14,.07);transition:.18s ease}.card:hover{transform:translateY(-4px)}.card .kicker{font-size:.72rem;font-weight:900;letter-spacing:.09em;text-transform:uppercase;color:#9a6419}.card h3{font-size:2rem;margin:.75rem 0}.card p{color:#6f6354;margin:0}.card span{margin-top:auto;padding-top:1.2rem;color:#a66a16;font-weight:900}
+.buy-strip{margin:0 auto 5.5rem;width:min(var(--max),calc(100% - 36px));padding:3.2rem clamp(1.5rem,5vw,4rem);border-radius:28px;background:#171511;color:white;display:flex;align-items:center;justify-content:space-between;gap:2rem;box-shadow:var(--shadow)}.buy-strip h2{font-size:clamp(2.2rem,4vw,4rem)}.buy-strip p{color:#bfb29e;margin:.7rem 0 0}.buy-buttons{display:flex;gap:.7rem;flex-wrap:wrap}.buy-buttons .amazon,.buy-buttons .etsy{color:white}
+footer{background:#0d0c0a;color:#a99f90;padding:2.8rem 0}.foot{display:flex;justify-content:space-between;gap:2rem;align-items:center}.foot a{color:#d8c4a1;text-decoration:none;font-weight:800}
+@media(max-width:900px){.hero-grid,.intro,.callout-grid{grid-template-columns:1fr;gap:2.5rem}.hero-grid{padding:40px 0 80px}.hero-image{max-width:650px}.facts{grid-template-columns:repeat(2,1fr)}.steps{grid-template-columns:repeat(2,1fr)}.gallery{grid-template-columns:1fr 1fr}.gallery-item:first-child{grid-column:span 2}.cards{grid-template-columns:1fr}.buy-strip{flex-direction:column;align-items:flex-start}}
+@media(max-width:720px){.devbar{font-size:.7rem;text-align:left;padding-left:18px}.menu{display:block}.links{display:none;position:absolute;left:18px;right:18px;top:72px;flex-direction:column;align-items:stretch;background:#f8f1e4;padding:1rem;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}.links.open{display:flex}.links a{padding:.55rem .7rem}.shop{text-align:center}.brand span{font-size:.84rem}.hero-grid{padding:40px 0 78px}h1{font-size:clamp(3.2rem,16vw,5.4rem)}section{padding:4rem 0}.video-section{padding:40px 0 0}.intro-section{padding:40px 0 4rem}.video-controls{right:10px;bottom:10px}.video-control{width:42px;height:42px}.facts,.steps,.gallery{grid-template-columns:1fr}.gallery-item:first-child{grid-column:auto}.section-head{display:block}.section-head p{margin-top:1rem}.photo img{min-height:300px}.foot{display:block}.foot div+div{margin-top:1rem}}
+</style>
+</head>
+<body>
+<div class="devbar">Bag of Dungeon landing page experiment · noindex during development</div>
+<header>
+  <div class="wrap nav">
+    <a class="brand" href="../" aria-label="Gunpowder Studios home"><img src="../images/favicon.png" alt=""><span>Gunpowder Studios<small>Board Game Makers</small></span></a>
+    <button class="menu" type="button" aria-label="Open navigation" onclick="document.querySelector('.links').classList.toggle('open')">☰</button>
+    <nav class="links">
+      <a href="../">Home</a><a href="#how">How it plays</a><a href="https://www.gunpowderstudios.co.uk/bod3d/">Play BOD3D</a>
+      <a class="shop amazon" href="https://www.amazon.co.uk/stores/page/D555A78A-1CEB-4FA7-8283-CC6BA0D48D96?language=en_GB" target="_blank" rel="noopener">Shop on Amazon</a>
+      <a class="shop etsy" href="https://www.etsy.com/shop/gunpowderstudios" target="_blank" rel="noopener">Shop on Etsy</a>
+    </nav>
+  </div>
+</header>
+<main>
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="eyebrow">Bag of Dungeon</div>
+      <h1>A dungeon crawler.<br>In a bag.</h1>
+      <p class="lead">Set up in 5 minutes. Learn as you play. A complete fantasy adventure you can take almost anywhere.</p>
+      <p class="sub">Explore a different dungeon every game, battle monsters, steal treasure, find the Ring of Creation and escape the Red Dragon.</p>
+      <div class="actions"><a class="btn btn-gold" href="https://www.amazon.co.uk/stores/page/D555A78A-1CEB-4FA7-8283-CC6BA0D48D96?language=en_GB" target="_blank" rel="noopener">Buy on Amazon ↗</a><a class="btn btn-outline" href="https://www.etsy.com/shop/gunpowderstudios" target="_blank" rel="noopener">Buy on Etsy ↗</a></div>
+      <div class="quick"><span>1–4 players</span><span>Solo or cooperative</span><span>Ages 7+</span><span>5-minute setup</span><span>New dungeon every game</span></div>
+    </div>
+    <div class="hero-image"><img src="../images/bag-of-dungeon-hero.png" onerror="this.onerror=null;this.src='../images/featured-image-1.png'" alt="Bag of Dungeon board game box and bag"></div>
+  </div>
+</section>
+<section class="video-section" aria-label="Bag of Dungeon video">
+  <div class="wrap">
+    <div class="video-shell">
+      <video id="bodVideo" autoplay muted loop playsinline preload="auto">
+        <source src="../videos/bod-video-rose.mp4" type="video/mp4">
+      </video>
+      <div class="video-controls" aria-label="Video controls">
+        <button class="video-control" id="bodRestart" type="button" aria-label="Restart video">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 .49-9"></path></svg>
+        </button>
+        <button class="video-control" id="bodSound" type="button" aria-label="Turn sound on" aria-pressed="false">
+          <svg id="bodSoundIcon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 3 9 3 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="intro-section">
+  <div class="wrap intro">
+    <div class="photo"><img src="../images/bag-of-dungeon-gameplay.jpg" onerror="this.onerror=null;this.src='../images/bag-of-dungeon-main.jpg'" alt="Bag of Dungeon laid out on a table"></div>
+    <div class="copy">
+      <div class="eyebrow" style="color:#9a6419">Your quest</div>
+      <h2>Get in. Find the Ring. Get out alive.</h2>
+      <p class="mission">The dungeon is built as you explore, so you never know what is waiting around the next corner.</p>
+      <p>Choose your adventurer and descend into a randomly generated maze of rooms and corridors. Find weapons, armour and magical items, fight monsters and survive the traps. Somewhere in the darkness lies the Ring of Creation.</p>
+      <p>Find it, reach the exit and defeat the Red Dragon. Simple objective. Questionable survival rate.</p>
+      <div class="facts"><div class="fact"><strong>1–4</strong><span>players</span></div><div class="fact"><strong>7+</strong><span>ages</span></div><div class="fact"><strong>5 min</strong><span>setup</span></div><div class="fact"><strong>∞</strong><span>dungeon layouts</span></div></div>
+    </div>
+  </div>
+</section>
+<section class="dark" id="how">
+  <div class="wrap">
+    <div class="section-head"><h2>How does it play?</h2><p>Old-school dungeon crawling without an evening spent reading a rulebook. Lay tiles, make decisions, roll dice and discover the adventure as you go.</p></div>
+    <div class="steps">
+      <div class="step"><b>1</b><h3>Choose a hero</h3><p>Pick your adventurer and enter the dungeon. Each hero gives you a different way to face what is coming.</p></div>
+      <div class="step"><b>2</b><h3>Build as you explore</h3><p>Draw and place dungeon tiles as you move. The maze grows differently every time you play.</p></div>
+      <div class="step"><b>3</b><h3>Fight & loot</h3><p>Battle monsters, dodge traps and collect weapons, armour, magic and treasure to stay alive.</p></div>
+      <div class="step"><b>4</b><h3>Escape the Dragon</h3><p>Find the Ring of Creation, reach the exit and survive the Red Dragon standing between you and freedom.</p></div>
+    </div>
+    <div class="gallery" aria-label="Bag of Dungeon image gallery">
+      <div class="gallery-item"><img src="../images/bag-of-dungeon-gameplay.jpg" onerror="this.onerror=null;this.src='../images/bag-of-dungeon-main.jpg'" alt="Bag of Dungeon game in play"></div>
+      <div class="gallery-item image-slot"><img src="../images/bag-of-dungeon-components.jpg" onerror="this.style.display='none'" alt="Bag of Dungeon components and miniatures"><div><strong>Image slot</strong><small>bag-of-dungeon-components.jpg</small></div></div>
+      <div class="gallery-item image-slot"><img src="../images/bag-of-dungeon-lifestyle.jpg" onerror="this.style.display='none'" alt="People playing Bag of Dungeon"><div><strong>Image slot</strong><small>bag-of-dungeon-lifestyle.jpg</small></div></div>
+    </div>
+  </div>
+</section>
+<section class="callout">
+  <div class="wrap callout-grid">
+    <div><div class="eyebrow">Die before you buy</div><h2>Try the dungeon for free.</h2><p>Play BOD3D in your browser and get a taste of the Bag of Dungeon world before you buy the tabletop game. One life. One character. One very unhappy dragon.</p></div>
+    <div class="play-card"><strong>Bag of Dungeon 3D</strong><p>A free solo browser adventure featuring the official Bag of Dungeon characters and monsters.</p><a class="btn btn-gold" href="https://www.gunpowderstudios.co.uk/bod3d/">Play BOD3D →</a></div>
+  </div>
+</section>
+<section class="more">
+  <div class="wrap">
+    <div class="section-head"><h2>More from the dungeon</h2><p>Bag of Dungeon can grow with you — add new worlds, heroes and adventures whenever you are ready.</p></div>
+    <div class="cards">
+      <a class="card" href="https://www.gunpowderstudios.co.uk/bag-of-dungeon-2/"><div class="kicker">Standalone or expansion</div><h3>Bag of Dungeon 2</h3><p>Leave the dungeon and enter the cursed forest of Calen Taur. Play it alone or connect it to the original game.</p><span>Enter the forest →</span></a>
+      <a class="card" href="https://www.gunpowderstudios.co.uk/product/bag-of-dungeon-legends-pack/"><div class="kicker">Expand your party</div><h3>Legends</h3><p>Add new characters, powers and more variety to your Bag of Dungeon adventures.</p><span>Meet the legends →</span></a>
+      <a class="card" href="https://www.gunpowderstudios.co.uk/book-of-dungeon/"><div class="kicker">Solo pencil adventure</div><h3>Book of Dungeon</h3><p>100 dungeons to draw-and-play with just a pencil, dice and your increasingly questionable judgement.</p><span>Open the book →</span></a>
+    </div>
+  </div>
+</section>
+<div class="buy-strip">
+  <div><h2>Ready to enter the dungeon?</h2><p>Bag of Dungeon is available from our Amazon store and Etsy shop.</p></div>
+  <div class="buy-buttons"><a class="btn amazon" href="https://www.amazon.co.uk/stores/page/D555A78A-1CEB-4FA7-8283-CC6BA0D48D96?language=en_GB" target="_blank" rel="noopener">Amazon ↗</a><a class="btn etsy" href="https://www.etsy.com/shop/gunpowderstudios" target="_blank" rel="noopener">Etsy ↗</a></div>
+</div>
+</main>
+<footer><div class="wrap foot"><div>© 2026 Gunpowder Studios Ltd</div><div><a href="../">Back to Gunpowder Studios</a></div></div></footer>
+<script>
+(function(){
+  const video=document.getElementById('bodVideo');
+  const soundButton=document.getElementById('bodSound');
+  const restartButton=document.getElementById('bodRestart');
+  const soundIcon=document.getElementById('bodSoundIcon');
+  if(!video||!soundButton||!restartButton||!soundIcon)return;
+
+  const mutedIcon='<polygon points="11 5 6 9 3 9 3 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line>';
+  const soundOnIcon='<polygon points="11 5 6 9 3 9 3 15 6 15 11 19 11 5"></polygon><path d="M15 9a5 5 0 0 1 0 6"></path><path d="M18 7a8 8 0 0 1 0 10"></path>';
+
+  soundButton.addEventListener('click',function(){
+    video.muted=!video.muted;
+    soundIcon.innerHTML=video.muted?mutedIcon:soundOnIcon;
+    soundButton.setAttribute('aria-label',video.muted?'Turn sound on':'Mute video');
+    soundButton.setAttribute('aria-pressed',video.muted?'false':'true');
+    if(video.paused)video.play().catch(()=>{});
+  });
+
+  restartButton.addEventListener('click',function(){
+    video.currentTime=0;
+    video.play().catch(()=>{});
+  });
+})();
+</script>
+</body>
+</html>

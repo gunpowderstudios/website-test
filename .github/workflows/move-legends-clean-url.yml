@@ -1,0 +1,54 @@
+name: Move TEST Legends to clean URL
+on:
+  push:
+    paths:
+      - '.github/workflows/move-legends-clean-url.yml'
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Move Legends page and update links
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf bag-of-dungeon-legends
+          cp -R product/bag-of-dungeon-legends-pack bag-of-dungeon-legends
+          python3 - <<'PY'
+          from pathlib import Path
+
+          new_page = Path('bag-of-dungeon-legends/index.html')
+          s = new_page.read_text(encoding='utf-8')
+          # The new page sits one directory below root instead of two.
+          s = s.replace('../../', '../')
+          s = s.replace('product/bag-of-dungeon-legends-pack/', 'bag-of-dungeon-legends/')
+          new_page.write_text(s, encoding='utf-8')
+
+          # Point all TEST internal links at the new clean route.
+          for p in Path('.').rglob('*.html'):
+              if p == Path('product/bag-of-dungeon-legends-pack/index.html'):
+                  continue
+              text = p.read_text(encoding='utf-8')
+              updated = text.replace('product/bag-of-dungeon-legends-pack/', 'bag-of-dungeon-legends/')
+              if updated != text:
+                  p.write_text(updated, encoding='utf-8')
+
+          # Keep the previous URL working as a redirect instead of breaking old links.
+          old = Path('product/bag-of-dungeon-legends-pack/index.html')
+          old.write_text('''<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<meta name="robots" content="noindex, nofollow">\n<meta http-equiv="refresh" content="0; url=../../bag-of-dungeon-legends/">\n<title>Bag of Dungeon Legends</title>\n<script>location.replace('../../bag-of-dungeon-legends/');</script>\n</head>\n<body>\n<p>Moving to <a href="../../bag-of-dungeon-legends/">Bag of Dungeon Legends</a>…</p>\n</body>\n</html>\n''', encoding='utf-8')
+          PY
+      - name: Commit safely
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rm .github/workflows/move-legends-clean-url.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "TEST - move Legends to /bag-of-dungeon-legends/"
+          git pull --rebase origin main
+          git push origin main

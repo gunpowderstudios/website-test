@@ -6,6 +6,7 @@
   const BRANCH='main';
   const PROJECT_ROOT='/website-test/';
   const PAGE_KEY='gps-staging-editor:'+location.pathname;
+  const LINK_PAGE_KEY=PAGE_KEY+':links';
   const TOKEN_KEY='gps-staging-github-token';
   const EDITABLE_SELECTOR=[
     '.topbar .wrap','.devbar',
@@ -29,6 +30,7 @@
     #gpsEditorPanel .gps-save{background:#376a42;border-color:#4e875a}
     #gpsEditorPanel .gps-danger{background:#6d201b;border-color:#8f3029}
     #gpsEditorPanel .gps-status{margin-left:auto;color:#d8cbb7;font-size:11px;font-weight:650}
+    body.gps-editing [data-gps-link-id].gps-link-selected{outline:3px solid #65a9ff!important;outline-offset:5px!important}
     body.gps-editing [data-gps-edit-id]{outline:1px dashed rgba(217,156,56,.6);outline-offset:3px;cursor:text}
     body.gps-editing [data-gps-edit-id]:hover{outline:2px solid #d99c38;background-image:linear-gradient(rgba(217,156,56,.08),rgba(217,156,56,.08))}
     body.gps-editing [data-gps-edit-id]:focus{outline:3px solid #f0b44e;outline-offset:3px;background-image:linear-gradient(rgba(217,156,56,.12),rgba(217,156,56,.12))}
@@ -41,13 +43,22 @@
     #gpsTokenCard .gps-token-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
     #gpsTokenCard button{border:1px solid rgba(255,255,255,.18);border-radius:999px;background:#292724;color:#fff;padding:10px 14px;font:800 12px/1 system-ui,-apple-system,sans-serif;cursor:pointer}
     #gpsTokenCard .gps-token-save{background:#d99c38;color:#21170a;border-color:#d99c38}
+    #gpsLinkOverlay{position:fixed;inset:0;z-index:100002;display:none;place-items:center;padding:18px;background:rgba(0,0,0,.68);font-family:system-ui,-apple-system,sans-serif}
+    #gpsLinkOverlay.open{display:grid}
+    #gpsLinkCard{width:min(560px,100%);padding:22px;border-radius:18px;background:#191816;color:#fff;box-shadow:0 20px 70px rgba(0,0,0,.5)}
+    #gpsLinkCard h3{margin:0 0 8px;font:800 20px/1.2 system-ui,-apple-system,sans-serif}
+    #gpsLinkCard p{margin:0 0 14px;color:#cfc5b6;font:500 13px/1.5 system-ui,-apple-system,sans-serif}
+    #gpsLinkCard input{width:100%;padding:12px 13px;border:1px solid #56514a;border-radius:10px;background:#0f0e0d;color:#fff;font:500 14px/1.2 system-ui,-apple-system,sans-serif}
+    #gpsLinkCard .gps-link-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+    #gpsLinkCard button{border:1px solid rgba(255,255,255,.18);border-radius:999px;background:#292724;color:#fff;padding:10px 14px;font:800 12px/1 system-ui,-apple-system,sans-serif;cursor:pointer}
+    #gpsLinkCard .gps-link-save{background:#65a9ff;color:#101821;border-color:#65a9ff}
     @media(max-width:600px){#gpsEditorPanel{bottom:8px;gap:6px;padding:8px}#gpsEditorPanel button{padding:9px 10px}.gps-status{width:100%;margin-left:0!important;text-align:center}#gpsEditorToggle{left:10px;bottom:10px}}
   `;
   document.head.appendChild(style);
 
   function editableCandidates(doc){
     return Array.from(doc.querySelectorAll(EDITABLE_SELECTOR)).filter(el=>{
-      if(el.closest('#gpsEditorPanel,#gpsEditorToggle,#gpsTokenOverlay'))return false;
+      if(el.closest('#gpsEditorPanel,#gpsEditorToggle,#gpsTokenOverlay,#gpsLinkOverlay'))return false;
       if(el.children.length && !['A','P','H1','H2','H3','SPAN','DIV','STRONG','B'].includes(el.tagName))return false;
       return (el.textContent||'').trim().length>0;
     });
@@ -80,6 +91,19 @@
     return map;
   }
 
+  function linkCandidates(doc){
+    return Array.from(doc.querySelectorAll('a[href]')).filter(el=>!el.closest('#gpsEditorPanel,#gpsEditorToggle,#gpsTokenOverlay,#gpsLinkOverlay'));
+  }
+
+  function mapLinks(doc){
+    const map={};
+    linkCandidates(doc).forEach((el,i)=>{
+      const id=pathFor(el,doc.body)||('link-'+i);
+      map[id]=el;
+    });
+    return map;
+  }
+
   const candidates=editableCandidates(document);
   const originals={};
   const elements={};
@@ -90,6 +114,15 @@
     elements[id]=el;
   });
 
+  const linkElements={};
+  const originalLinks={};
+  linkCandidates(document).forEach((el,i)=>{
+    const id=pathFor(el,document.body)||('link-'+i);
+    el.dataset.gpsLinkId=id;
+    linkElements[id]=el;
+    originalLinks[id]=el.getAttribute('href')||'';
+  });
+
   function readDraft(){
     try{return JSON.parse(localStorage.getItem(PAGE_KEY)||'{}');}catch(e){return {};}
   }
@@ -97,19 +130,28 @@
     const draft=readDraft();
     Object.keys(draft).forEach(id=>{if(elements[id])elements[id].innerHTML=draft[id];});
   }
+  function readLinkDraft(){
+    try{return JSON.parse(localStorage.getItem(LINK_PAGE_KEY)||'{}');}catch(e){return {};}
+  }
+  function applyLinkDraft(){
+    const draft=readLinkDraft();
+    Object.keys(draft).forEach(id=>{if(linkElements[id])linkElements[id].setAttribute('href',draft[id]);});
+  }
   applyDraft();
+  applyLinkDraft();
 
   const toggle=document.createElement('button');
   toggle.id='gpsEditorToggle';
   toggle.type='button';
-  toggle.textContent='✎ Edit text';
-  toggle.setAttribute('aria-label','Open staging text editor');
+  toggle.textContent='✎ Edit';
+  toggle.setAttribute('aria-label','Open staging editor');
   document.body.appendChild(toggle);
 
   const panel=document.createElement('div');
   panel.id='gpsEditorPanel';
   panel.innerHTML=`
     <button type="button" class="gps-primary" data-action="edit">Start editing</button>
+    <button type="button" data-action="link" disabled>Change link</button>
     <button type="button" class="gps-save" data-action="save">Save</button>
     <button type="button" data-action="copy">Copy changes</button>
     <button type="button" data-action="forget">Forget token</button>
@@ -129,14 +171,55 @@
     </div>`;
   document.body.appendChild(tokenOverlay);
 
+  const linkOverlay=document.createElement('div');
+  linkOverlay.id='gpsLinkOverlay';
+  linkOverlay.innerHTML=`
+    <div id="gpsLinkCard" role="dialog" aria-modal="true" aria-labelledby="gpsLinkTitle">
+      <h3 id="gpsLinkTitle">Change link</h3>
+      <p>Edit the destination for the selected button, card or link. Relative links such as <strong>shop/</strong> are fine.</p>
+      <input id="gpsLinkInput" type="text" autocomplete="off" spellcheck="false" placeholder="https://… or page/" aria-label="Link destination">
+      <div class="gps-link-actions"><button type="button" data-link-action="cancel">Cancel</button><button type="button" class="gps-link-save" data-link-action="save">Apply link</button></div>
+    </div>`;
+  document.body.appendChild(linkOverlay);
+
   const tokenInput=tokenOverlay.querySelector('#gpsTokenInput');
   const editBtn=panel.querySelector('[data-action="edit"]');
+  const linkBtn=panel.querySelector('[data-action="link"]');
   const saveBtn=panel.querySelector('[data-action="save"]');
   const status=panel.querySelector('.gps-status');
+  const linkInput=linkOverlay.querySelector('#gpsLinkInput');
   let editing=false;
+  let activeLink=null;
   let tokenResolver=null;
 
   function setStatus(text){status.textContent=text;}
+  function selectLink(link){
+    if(activeLink)activeLink.classList.remove('gps-link-selected');
+    activeLink=link||null;
+    if(activeLink)activeLink.classList.add('gps-link-selected');
+    linkBtn.disabled=!activeLink;
+  }
+  function safeHref(value){
+    const v=String(value||'').trim();
+    if(!v)return false;
+    return !/^(?:javascript|data|vbscript):/i.test(v);
+  }
+  function openLinkEditor(){
+    if(!activeLink){setStatus('Click a linked button, card or text first');return;}
+    linkInput.value=activeLink.getAttribute('href')||'';
+    linkOverlay.classList.add('open');
+    setTimeout(()=>{linkInput.focus();linkInput.select();},0);
+  }
+  function closeLinkEditor(){linkOverlay.classList.remove('open');}
+  function applyLinkEditor(){
+    if(!activeLink){closeLinkEditor();return;}
+    const value=linkInput.value.trim();
+    if(!safeHref(value)){setStatus('That link is empty or not allowed');linkInput.focus();return;}
+    activeLink.setAttribute('href',value);
+    saveLocalLinkDraft();
+    closeLinkEditor();
+    setStatus('Link changed · press Save to commit');
+  }
   function setEditing(on){
     editing=on;
     document.body.classList.toggle('gps-editing',on);
@@ -144,19 +227,22 @@
       if(on){el.setAttribute('contenteditable','true');el.setAttribute('spellcheck','true');}
       else{el.removeAttribute('contenteditable');el.removeAttribute('spellcheck');}
     });
+    if(!on)selectLink(null);
     editBtn.textContent=on?'Stop editing':'Start editing';
-    setStatus(on?'Editing is ON · Save commits to TEST GitHub':'TEST editor · Save commits to GitHub');
+    setStatus(on?'Editing is ON · click a link then Change link':'TEST editor · Save commits to GitHub');
   }
 
   // While text editing is active, linked cards/buttons/nav items must stay editable
   // instead of following their href. Normal link behaviour returns when editing stops.
   document.addEventListener('click',e=>{
     if(!editing)return;
-    if(e.target.closest('#gpsEditorPanel,#gpsEditorToggle,#gpsTokenOverlay'))return;
+    if(e.target.closest('#gpsEditorPanel,#gpsEditorToggle,#gpsTokenOverlay,#gpsLinkOverlay'))return;
     const link=e.target.closest('a[href]');
     if(!link)return;
     e.preventDefault();
     e.stopPropagation();
+    selectLink(link);
+    setStatus('Link selected · '+(link.getAttribute('href')||'')+' · use Change link to edit URL');
     const editable=e.target.closest('[data-gps-edit-id]');
     if(editable&&editable!==document.activeElement){
       try{editable.focus({preventScroll:true});}catch(err){editable.focus();}
@@ -174,6 +260,21 @@
   function saveLocalDraft(){
     const changes=currentChanges();
     localStorage.setItem(PAGE_KEY,JSON.stringify(changes));
+    return changes;
+  }
+
+  function currentLinkChanges(){
+    const changes={};
+    Object.keys(linkElements).forEach(id=>{
+      const href=linkElements[id].getAttribute('href')||'';
+      if(href!==originalLinks[id])changes[id]=href;
+    });
+    return changes;
+  }
+
+  function saveLocalLinkDraft(){
+    const changes=currentLinkChanges();
+    localStorage.setItem(LINK_PAGE_KEY,JSON.stringify(changes));
     return changes;
   }
 
@@ -261,8 +362,9 @@
 
   async function saveToGitHub(){
     const changes=saveLocalDraft();
-    const count=Object.keys(changes).length;
-    if(!count){setStatus('No new text changes to save');return;}
+    const linkChanges=saveLocalLinkDraft();
+    const count=Object.keys(changes).length+Object.keys(linkChanges).length;
+    if(!count){setStatus('No new changes to save');return;}
 
     const token=await requestToken();
     if(!token){setStatus('Save cancelled · no token stored');return;}
@@ -278,13 +380,18 @@
       const source=decodeBase64Utf8(file.content);
       const sourceDoc=new DOMParser().parseFromString(source,'text/html');
       const sourceMap=mapEditable(sourceDoc);
+      const sourceLinks=mapLinks(sourceDoc);
       const missing=[];
 
       Object.keys(changes).forEach(id=>{
         if(sourceMap[id])sourceMap[id].innerHTML=changes[id];
         else missing.push(id);
       });
-      if(missing.length)throw new Error('Could not match '+missing.length+' edited text item'+(missing.length===1?'':'s')+' to the GitHub page. Reload the page and try again.');
+      Object.keys(linkChanges).forEach(id=>{
+        if(sourceLinks[id])sourceLinks[id].setAttribute('href',linkChanges[id]);
+        else missing.push(id);
+      });
+      if(missing.length)throw new Error('Could not match '+missing.length+' edited item'+(missing.length===1?'':'s')+' to the GitHub page. Reload the page and try again.');
 
       const doctype='<!doctype html>\n';
       const updated=doctype+sourceDoc.documentElement.outerHTML;
@@ -297,6 +404,8 @@
       },token);
 
       Object.keys(changes).forEach(id=>{if(elements[id])originals[id]=elements[id].innerHTML;});
+      Object.keys(linkChanges).forEach(id=>{if(linkElements[id])originalLinks[id]=linkElements[id].getAttribute('href')||'';});
+      localStorage.removeItem(LINK_PAGE_KEY);
       setStatus('Saved to GitHub ✓ · TEST Pages will update shortly');
     }catch(error){
       if(error.status===401||error.status===403){
@@ -316,7 +425,8 @@
 
   async function copyChanges(){
     const changes=currentChanges();
-    const payload={page:location.pathname,title:document.title,changes};
+    const links=currentLinkChanges();
+    const payload={page:location.pathname,title:document.title,changes,links};
     const text=JSON.stringify(payload,null,2);
     try{
       await navigator.clipboard.writeText(text);
@@ -330,15 +440,33 @@
   function resetPage(){
     if(!confirm('Reset all text edits saved for this page in this browser?'))return;
     localStorage.removeItem(PAGE_KEY);
+    localStorage.removeItem(LINK_PAGE_KEY);
     Object.keys(elements).forEach(id=>elements[id].innerHTML=originals[id]);
+    Object.keys(linkElements).forEach(id=>linkElements[id].setAttribute('href',originalLinks[id]));
+    selectLink(null);
     setStatus('Local page edits reset');
   }
+
+  linkOverlay.addEventListener('click',e=>{
+    const btn=e.target.closest('button[data-link-action]');
+    if(btn){
+      if(btn.dataset.linkAction==='cancel')closeLinkEditor();
+      if(btn.dataset.linkAction==='save')applyLinkEditor();
+      return;
+    }
+    if(e.target===linkOverlay)closeLinkEditor();
+  });
+  linkInput.addEventListener('keydown',e=>{
+    if(e.key==='Enter'){e.preventDefault();applyLinkEditor();}
+    if(e.key==='Escape'){e.preventDefault();closeLinkEditor();}
+  });
 
   toggle.addEventListener('click',()=>{panel.classList.add('open');toggle.style.display='none';});
   panel.addEventListener('click',e=>{
     const btn=e.target.closest('button[data-action]');if(!btn)return;
     const action=btn.dataset.action;
     if(action==='edit')setEditing(!editing);
+    if(action==='link')openLinkEditor();
     if(action==='save')saveToGitHub();
     if(action==='copy')copyChanges();
     if(action==='forget'){

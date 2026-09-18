@@ -398,7 +398,8 @@
   async function saveToGitHub(){
     const changes=saveLocalDraft();
     const linkChanges=saveLocalLinkDraft();
-    const count=Object.keys(changes).length+Object.keys(linkChanges).length;
+    const visualCount=(window.GPSVisualEditor&&window.GPSVisualEditor.getChangeCount)?window.GPSVisualEditor.getChangeCount():0;
+    const count=Object.keys(changes).length+Object.keys(linkChanges).length+visualCount;
     if(!count){setStatus('No new changes to save');return;}
 
     const token=await requestToken();
@@ -417,6 +418,11 @@
       const sourceMap=mapEditable(sourceDoc);
       const sourceLinks=mapLinks(sourceDoc);
       const missing=[];
+
+      if(window.GPSVisualEditor&&window.GPSVisualEditor.applyToSource){
+        const visualMissing=window.GPSVisualEditor.applyToSource(sourceDoc,sourceMap)||[];
+        missing.push.apply(missing,visualMissing);
+      }
 
       Object.keys(changes).forEach(id=>{
         if(sourceMap[id])sourceMap[id].innerHTML=changes[id];
@@ -454,6 +460,7 @@
         originalRels[id]=linkElements[id].getAttribute('rel')||'';
       });
       localStorage.removeItem(LINK_PAGE_KEY);
+      if(window.GPSVisualEditor&&window.GPSVisualEditor.markSaved)window.GPSVisualEditor.markSaved();
       setStatus('Saved to GitHub ✓ · TEST Pages will update shortly');
     }catch(error){
       if(error.status===401||error.status===403){
@@ -474,7 +481,8 @@
   async function copyChanges(){
     const changes=currentChanges();
     const links=currentLinkChanges();
-    const payload={page:location.pathname,title:document.title,changes,links};
+    const visual=(window.GPSVisualEditor&&window.GPSVisualEditor.getChanges)?window.GPSVisualEditor.getChanges():null;
+    const payload={page:location.pathname,title:document.title,changes,links,visual};
     const text=JSON.stringify(payload,null,2);
     try{
       await navigator.clipboard.writeText(text);
@@ -497,6 +505,7 @@
       if(originalRels[id])el.setAttribute('rel',originalRels[id]);else el.removeAttribute('rel');
     });
     selectLink(null);
+    if(window.GPSVisualEditor&&window.GPSVisualEditor.reset)window.GPSVisualEditor.reset();
     setStatus('Local page edits reset');
   }
 
@@ -541,4 +550,13 @@
   });
 })();
 
-(function(){const current=document.currentScript;if(!current)return;const helper=document.createElement('script');helper.src=new URL('staging-image-helper.js?v=5',current.src).href;document.head.appendChild(helper);})();
+(function(){
+  const current=document.currentScript;
+  if(!current)return;
+  const imageHelper=document.createElement('script');
+  imageHelper.src=new URL('staging-image-helper.js?v=5',current.src).href;
+  document.head.appendChild(imageHelper);
+  const layoutHelper=document.createElement('script');
+  layoutHelper.src=new URL('staging-layout-helper.js?v=1',current.src).href;
+  document.head.appendChild(layoutHelper);
+})();

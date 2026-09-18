@@ -557,6 +557,6 @@
   imageHelper.src=new URL('staging-image-helper.js?v=5',current.src).href;
   document.head.appendChild(imageHelper);
   const layoutHelper=document.createElement('script');
-  layoutHelper.src=new URL('staging-layout-helper.js?v=1',current.src).href;
+  layoutHelper.src=new URL('staging-layout-helper.js?v=2',current.src).href;
   document.head.appendChild(layoutHelper);
 })();

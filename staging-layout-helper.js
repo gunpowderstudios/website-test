@@ -77,6 +77,8 @@
 
   const initialSections=buildSectionMap(main);
   const sectionElements=initialSections.map;
+  const sectionKeyByElement=new Map();
+  Object.keys(sectionElements).forEach(key=>sectionKeyByElement.set(sectionElements[key],key));
   let originalOrder=initialSections.keys.slice();
   const originalSectionStyles={};
   Object.keys(sectionElements).forEach(key=>originalSectionStyles[key]=sectionElements[key].getAttribute('style')||'');
@@ -219,8 +221,7 @@
       if(now!==originalElementStyles[id])elementStyles[id]=now;
     });
 
-    const current=buildSectionMap(main);
-    const order=current.keys;
+    const order=listSections(main).map(el=>sectionKeyByElement.get(el)).filter(Boolean);
     const orderChanged=JSON.stringify(order)!==JSON.stringify(originalOrder);
 
     return {
@@ -377,8 +378,7 @@
       status('Text style reset to original · press Save to commit');
     }
     if(styleMode==='section'&&activeSection){
-      const info=buildSectionMap(main);
-      const key=Object.keys(info.map).find(k=>info.map[k]===activeSection);
+      const key=sectionKeyByElement.get(activeSection);
       if(key)setStyleAttr(activeSection,originalSectionStyles[key]||'');
       saveDraft();
       status('Section style reset to original · press Save to commit');
@@ -475,8 +475,7 @@
   }
 
   function markSaved(){
-    const current=buildSectionMap(main);
-    originalOrder=current.keys.slice();
+    originalOrder=listSections(main).map(el=>sectionKeyByElement.get(el)).filter(Boolean);
     Object.keys(sectionElements).forEach(key=>{
       if(sectionElements[key])originalSectionStyles[key]=sectionElements[key].getAttribute('style')||'';
     });

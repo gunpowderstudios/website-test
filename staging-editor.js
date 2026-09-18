@@ -171,7 +171,6 @@
     <button type="button" class="gps-primary" data-action="edit">Start editing</button>
     <button type="button" data-action="link" disabled>Change link</button>
     <button type="button" class="gps-save" data-action="save">Save</button>
-    <button type="button" data-action="copy">Copy changes</button>
     <button type="button" data-action="forget">Forget token</button>
     <button type="button" class="gps-danger" data-action="reset">Reset page</button>
     <button type="button" data-action="close">Close</button>
@@ -478,21 +477,6 @@
     }
   }
 
-  async function copyChanges(){
-    const changes=currentChanges();
-    const links=currentLinkChanges();
-    const visual=(window.GPSVisualEditor&&window.GPSVisualEditor.getChanges)?window.GPSVisualEditor.getChanges():null;
-    const payload={page:location.pathname,title:document.title,changes,links,visual};
-    const text=JSON.stringify(payload,null,2);
-    try{
-      await navigator.clipboard.writeText(text);
-      setStatus(Object.keys(changes).length+' change'+(Object.keys(changes).length===1?'':'s')+' copied · paste into ChatGPT');
-    }catch(e){
-      const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();
-      setStatus('Changes copied · paste into ChatGPT');
-    }
-  }
-
   function resetPage(){
     if(!confirm('Reset all text edits saved for this page in this browser?'))return;
     localStorage.removeItem(PAGE_KEY);
@@ -530,7 +514,6 @@
     if(action==='edit')setEditing(!editing);
     if(action==='link')openLinkEditor();
     if(action==='save')saveToGitHub();
-    if(action==='copy')copyChanges();
     if(action==='forget'){
       sessionStorage.removeItem(TOKEN_KEY);
       setStatus('GitHub token forgotten for this browser session');

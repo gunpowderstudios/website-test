@@ -48,7 +48,9 @@
     #gpsLinkCard{width:min(560px,100%);padding:22px;border-radius:18px;background:#191816;color:#fff;box-shadow:0 20px 70px rgba(0,0,0,.5)}
     #gpsLinkCard h3{margin:0 0 8px;font:800 20px/1.2 system-ui,-apple-system,sans-serif}
     #gpsLinkCard p{margin:0 0 14px;color:#cfc5b6;font:500 13px/1.5 system-ui,-apple-system,sans-serif}
-    #gpsLinkCard input{width:100%;padding:12px 13px;border:1px solid #56514a;border-radius:10px;background:#0f0e0d;color:#fff;font:500 14px/1.2 system-ui,-apple-system,sans-serif}
+    #gpsLinkCard input[type="text"]{width:100%;padding:12px 13px;border:1px solid #56514a;border-radius:10px;background:#0f0e0d;color:#fff;font:500 14px/1.2 system-ui,-apple-system,sans-serif}
+    #gpsLinkCard .gps-target-row{display:flex;align-items:center;gap:10px;margin-top:14px;padding:11px 12px;border:1px solid #45413b;border-radius:10px;background:#11100f;color:#eee;font:700 13px/1.3 system-ui,-apple-system,sans-serif;cursor:pointer}
+    #gpsLinkCard .gps-target-row input{width:18px;height:18px;margin:0;accent-color:#65a9ff}
     #gpsLinkCard .gps-link-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
     #gpsLinkCard button{border:1px solid rgba(255,255,255,.18);border-radius:999px;background:#292724;color:#fff;padding:10px 14px;font:800 12px/1 system-ui,-apple-system,sans-serif;cursor:pointer}
     #gpsLinkCard .gps-link-save{background:#65a9ff;color:#101821;border-color:#65a9ff}
@@ -116,11 +118,15 @@
 
   const linkElements={};
   const originalLinks={};
+  const originalTargets={};
+  const originalRels={};
   linkCandidates(document).forEach((el,i)=>{
     const id=pathFor(el,document.body)||('link-'+i);
     el.dataset.gpsLinkId=id;
     linkElements[id]=el;
     originalLinks[id]=el.getAttribute('href')||'';
+    originalTargets[id]=el.getAttribute('target')||'';
+    originalRels[id]=el.getAttribute('rel')||'';
   });
 
   function readDraft(){
@@ -135,7 +141,19 @@
   }
   function applyLinkDraft(){
     const draft=readLinkDraft();
-    Object.keys(draft).forEach(id=>{if(linkElements[id])linkElements[id].setAttribute('href',draft[id]);});
+    Object.keys(draft).forEach(id=>{
+      const el=linkElements[id];
+      if(!el)return;
+      const item=draft[id];
+      if(typeof item==='string'){
+        el.setAttribute('href',item);
+        return;
+      }
+      if(!item||typeof item!=='object')return;
+      el.setAttribute('href',item.href||'');
+      if(item.target)el.setAttribute('target',item.target);else el.removeAttribute('target');
+      if(item.rel)el.setAttribute('rel',item.rel);else el.removeAttribute('rel');
+    });
   }
   applyDraft();
   applyLinkDraft();
@@ -178,6 +196,7 @@
       <h3 id="gpsLinkTitle">Change link</h3>
       <p>Edit the destination for the selected button, card or link. Relative links such as <strong>shop/</strong> are fine.</p>
       <input id="gpsLinkInput" type="text" autocomplete="off" spellcheck="false" placeholder="https://… or page/" aria-label="Link destination">
+      <label class="gps-target-row"><input id="gpsLinkTarget" type="checkbox"> <span>Open in a new window/tab</span></label>
       <div class="gps-link-actions"><button type="button" data-link-action="cancel">Cancel</button><button type="button" class="gps-link-save" data-link-action="save">Apply link</button></div>
     </div>`;
   document.body.appendChild(linkOverlay);
@@ -188,6 +207,7 @@
   const saveBtn=panel.querySelector('[data-action="save"]');
   const status=panel.querySelector('.gps-status');
   const linkInput=linkOverlay.querySelector('#gpsLinkInput');
+  const linkTarget=linkOverlay.querySelector('#gpsLinkTarget');
   let editing=false;
   let activeLink=null;
   let tokenResolver=null;
@@ -207,6 +227,7 @@
   function openLinkEditor(){
     if(!activeLink){setStatus('Click a linked button, card or text first');return;}
     linkInput.value=activeLink.getAttribute('href')||'';
+    linkTarget.checked=(activeLink.getAttribute('target')||'')==='_blank';
     linkOverlay.classList.add('open');
     setTimeout(()=>{linkInput.focus();linkInput.select();},0);
   }
@@ -216,6 +237,15 @@
     const value=linkInput.value.trim();
     if(!safeHref(value)){setStatus('That link is empty or not allowed');linkInput.focus();return;}
     activeLink.setAttribute('href',value);
+    const relTokens=(activeLink.getAttribute('rel')||'').split(/\s+/).filter(Boolean).filter(x=>x.toLowerCase()!=='noopener');
+    if(linkTarget.checked){
+      activeLink.setAttribute('target','_blank');
+      relTokens.push('noopener');
+    }else{
+      activeLink.removeAttribute('target');
+    }
+    if(relTokens.length)activeLink.setAttribute('rel',Array.from(new Set(relTokens)).join(' '));
+    else activeLink.removeAttribute('rel');
     saveLocalLinkDraft();
     closeLinkEditor();
     setStatus('Link changed · press Save to commit');
@@ -266,8 +296,13 @@
   function currentLinkChanges(){
     const changes={};
     Object.keys(linkElements).forEach(id=>{
-      const href=linkElements[id].getAttribute('href')||'';
-      if(href!==originalLinks[id])changes[id]=href;
+      const el=linkElements[id];
+      const href=el.getAttribute('href')||'';
+      const target=el.getAttribute('target')||'';
+      const rel=el.getAttribute('rel')||'';
+      if(href!==originalLinks[id]||target!==originalTargets[id]||rel!==originalRels[id]){
+        changes[id]={href,target,rel};
+      }
     });
     return changes;
   }
@@ -388,8 +423,16 @@
         else missing.push(id);
       });
       Object.keys(linkChanges).forEach(id=>{
-        if(sourceLinks[id])sourceLinks[id].setAttribute('href',linkChanges[id]);
-        else missing.push(id);
+        const link=sourceLinks[id];
+        if(!link){missing.push(id);return;}
+        const item=linkChanges[id];
+        if(typeof item==='string'){
+          link.setAttribute('href',item);
+          return;
+        }
+        link.setAttribute('href',item.href||'');
+        if(item.target)link.setAttribute('target',item.target);else link.removeAttribute('target');
+        if(item.rel)link.setAttribute('rel',item.rel);else link.removeAttribute('rel');
       });
       if(missing.length)throw new Error('Could not match '+missing.length+' edited item'+(missing.length===1?'':'s')+' to the GitHub page. Reload the page and try again.');
 
@@ -404,7 +447,12 @@
       },token);
 
       Object.keys(changes).forEach(id=>{if(elements[id])originals[id]=elements[id].innerHTML;});
-      Object.keys(linkChanges).forEach(id=>{if(linkElements[id])originalLinks[id]=linkElements[id].getAttribute('href')||'';});
+      Object.keys(linkChanges).forEach(id=>{
+        if(!linkElements[id])return;
+        originalLinks[id]=linkElements[id].getAttribute('href')||'';
+        originalTargets[id]=linkElements[id].getAttribute('target')||'';
+        originalRels[id]=linkElements[id].getAttribute('rel')||'';
+      });
       localStorage.removeItem(LINK_PAGE_KEY);
       setStatus('Saved to GitHub ✓ · TEST Pages will update shortly');
     }catch(error){
@@ -442,7 +490,12 @@
     localStorage.removeItem(PAGE_KEY);
     localStorage.removeItem(LINK_PAGE_KEY);
     Object.keys(elements).forEach(id=>elements[id].innerHTML=originals[id]);
-    Object.keys(linkElements).forEach(id=>linkElements[id].setAttribute('href',originalLinks[id]));
+    Object.keys(linkElements).forEach(id=>{
+      const el=linkElements[id];
+      el.setAttribute('href',originalLinks[id]);
+      if(originalTargets[id])el.setAttribute('target',originalTargets[id]);else el.removeAttribute('target');
+      if(originalRels[id])el.setAttribute('rel',originalRels[id]);else el.removeAttribute('rel');
+    });
     selectLink(null);
     setStatus('Local page edits reset');
   }

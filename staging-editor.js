@@ -252,7 +252,7 @@
   function setEditing(on){
     editing=on;
     document.body.classList.toggle('gps-editing',on);
-    candidates.forEach(el=>{
+    editableCandidates(document).forEach(el=>{
       if(on){el.setAttribute('contenteditable','true');el.setAttribute('spellcheck','true');}
       else{el.removeAttribute('contenteditable');el.removeAttribute('spellcheck');}
     });

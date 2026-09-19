@@ -23,6 +23,10 @@
     #gpsEditorPanel .gps-visual-btn{background:#203343;border-color:#36566e}
     #gpsEditorPanel .gps-visual-btn:hover{background:#29465e}
     #gpsEditorPanel .gps-visual-btn:disabled{opacity:.4}
+    #gpsEditorPanel .gps-duplicate-btn{background:#294b35;border-color:#3f704d}
+    #gpsEditorPanel .gps-duplicate-btn:hover{background:#356344}
+    #gpsEditorPanel .gps-delete-btn{background:#6d201b;border-color:#8f3029}
+    #gpsEditorPanel .gps-delete-btn:hover{background:#852a23}
     body.gps-editing .gps-section-selected{outline:3px solid #7ac7ff!important;outline-offset:-3px!important}
     body.gps-editing .gps-text-selected{outline:3px solid #ffcf66!important;outline-offset:3px!important}
     #gpsStyleOverlay{position:fixed;inset:0;z-index:100004;display:none;place-items:center;padding:18px;background:rgba(0,0,0,.7);font-family:system-ui,-apple-system,sans-serif}
@@ -82,6 +86,46 @@
   let originalOrder=initialSections.keys.slice();
   const originalSectionStyles={};
   Object.keys(sectionElements).forEach(key=>originalSectionStyles[key]=sectionElements[key].getAttribute('style')||'');
+
+  const cloneIdByElement=new Map();
+  let nextCloneNumber=1;
+
+  function isCloneSection(el){return !!(el&&cloneIdByElement.has(el));}
+  function makeCloneId(){return 'clone-'+(nextCloneNumber++);}
+  function stripEditorState(root,forSource){
+    if(!root)return root;
+    const nodes=[root].concat(Array.from(root.querySelectorAll('*')));
+    nodes.forEach(el=>{
+      el.classList.remove('gps-section-selected','gps-text-selected','gps-link-selected');
+      el.removeAttribute('contenteditable');
+      el.removeAttribute('spellcheck');
+      if(forSource){
+        Array.from(el.attributes||[]).forEach(attr=>{
+          if(attr.name.indexOf('data-gps-')===0)el.removeAttribute(attr.name);
+        });
+      }
+    });
+    return root;
+  }
+  function sectionHtml(el,forSource){
+    const clone=el.cloneNode(true);
+    stripEditorState(clone,!!forSource);
+    return clone.outerHTML;
+  }
+  function sectionFromHtml(html,cloneId){
+    const template=document.createElement('template');
+    template.innerHTML=String(html||'').trim();
+    const el=template.content.firstElementChild;
+    if(!el)return null;
+    cloneIdByElement.set(el,cloneId||makeCloneId());
+    const n=Number(String(cloneId||'').replace(/^clone-/,''));
+    if(Number.isFinite(n)&&n>=nextCloneNumber)nextCloneNumber=n+1;
+    return el;
+  }
+  function removeDuplicateIds(root){
+    if(!root)return;
+    [root].concat(Array.from(root.querySelectorAll('[id]'))).forEach(el=>el.removeAttribute('id'));
+  }
 
   const editableElements={};
   document.querySelectorAll('[data-gps-edit-id]').forEach(el=>editableElements[el.dataset.gpsEditId]=el);
@@ -165,6 +209,7 @@
   }
 
   function rememberElementStyle(el){
+    if(isCloneSection(findSection(el)))return;
     const id=el&&el.dataset?el.dataset.gpsEditId:null;
     if(!id)return;
     if(!(id in originalElementStyles))originalElementStyles[id]=el.getAttribute('style')||'';
@@ -199,6 +244,8 @@
     sectionStyleBtn.disabled=!activeSection;
     upBtn.disabled=!activeSection||!activeSection.previousElementSibling;
     downBtn.disabled=!activeSection||!activeSection.nextElementSibling;
+    duplicateBtn.disabled=!activeSection;
+    deleteBtn.disabled=!activeSection;
   }
 
   function status(message){
@@ -221,11 +268,21 @@
       if(now!==originalElementStyles[id])elementStyles[id]=now;
     });
 
-    const order=listSections(main).map(el=>sectionKeyByElement.get(el)).filter(Boolean);
-    const orderChanged=JSON.stringify(order)!==JSON.stringify(originalOrder);
+    const currentSections=listSections(main);
+    const originalSequence=currentSections.map(el=>sectionKeyByElement.get(el)).filter(Boolean);
+    const hasClones=currentSections.some(el=>isCloneSection(el));
+    const sameOriginals=JSON.stringify(originalSequence)===JSON.stringify(originalOrder) && originalSequence.length===currentSections.length;
+    const structure=(!sameOriginals||hasClones)?currentSections.map(el=>{
+      const key=sectionKeyByElement.get(el);
+      if(key)return {type:'original',key};
+      const id=cloneIdByElement.get(el)||makeCloneId();
+      cloneIdByElement.set(el,id);
+      return {type:'clone',id,html:sectionHtml(el,false)};
+    }):null;
 
     return {
-      order:orderChanged?order:null,
+      order:null,
+      structure,
       sectionStyles,
       elementStyles
     };
@@ -233,7 +290,7 @@
 
   function changeCount(draft){
     const d=draft||currentDraft();
-    return Object.keys(d.sectionStyles||{}).length+Object.keys(d.elementStyles||{}).length+(d.order?1:0);
+    return Object.keys(d.sectionStyles||{}).length+Object.keys(d.elementStyles||{}).length+(d.structure?1:(d.order?1:0));
   }
 
   function saveDraft(){
@@ -264,7 +321,22 @@
       rememberElementStyle(el);
       setStyleAttr(el,d.elementStyles[id]);
     });
-    if(Array.isArray(d.order)){
+    if(Array.isArray(d.structure)){
+      listSections(main).filter(el=>isCloneSection(el)).forEach(el=>el.remove());
+      const wanted=[];
+      d.structure.forEach(item=>{
+        if(item&&item.type==='original'&&sectionElements[item.key])wanted.push(sectionElements[item.key]);
+        if(item&&item.type==='clone'){
+          const el=sectionFromHtml(item.html,item.id);
+          if(el)wanted.push(el);
+        }
+      });
+      wanted.forEach(el=>main.appendChild(el));
+      Object.keys(sectionElements).forEach(key=>{
+        const el=sectionElements[key];
+        if(el&&!wanted.includes(el))el.remove();
+      });
+    }else if(Array.isArray(d.order)){
       d.order.forEach(key=>{if(sectionElements[key])main.appendChild(sectionElements[key]);});
     }
   }
@@ -300,10 +372,26 @@
   downBtn.disabled=true;
   downBtn.dataset.visualAction='down';
 
+  const duplicateBtn=document.createElement('button');
+  duplicateBtn.type='button';
+  duplicateBtn.className='gps-visual-btn gps-duplicate-btn';
+  duplicateBtn.textContent='Duplicate section';
+  duplicateBtn.disabled=true;
+  duplicateBtn.dataset.visualAction='duplicate';
+
+  const deleteBtn=document.createElement('button');
+  deleteBtn.type='button';
+  deleteBtn.className='gps-visual-btn gps-delete-btn';
+  deleteBtn.textContent='Delete section';
+  deleteBtn.disabled=true;
+  deleteBtn.dataset.visualAction='delete';
+
   panel.insertBefore(textStyleBtn,saveButton);
   panel.insertBefore(sectionStyleBtn,saveButton);
   panel.insertBefore(upBtn,saveButton);
   panel.insertBefore(downBtn,saveButton);
+  panel.insertBefore(duplicateBtn,saveButton);
+  panel.insertBefore(deleteBtn,saveButton);
 
   function openTextStyle(){
     if(!activeText)return;
@@ -372,14 +460,20 @@
 
   function resetStyle(){
     if(styleMode==='text'&&activeText){
-      const id=activeText.dataset.gpsEditId;
-      setStyleAttr(activeText,originalElementStyles[id]||'');
+      if(isCloneSection(findSection(activeText)))setStyleAttr(activeText,styleInitial.style||'');
+      else{
+        const id=activeText.dataset.gpsEditId;
+        setStyleAttr(activeText,originalElementStyles[id]||'');
+      }
       saveDraft();
       status('Text style reset to original · press Save to commit');
     }
     if(styleMode==='section'&&activeSection){
-      const key=sectionKeyByElement.get(activeSection);
-      if(key)setStyleAttr(activeSection,originalSectionStyles[key]||'');
+      if(isCloneSection(activeSection))setStyleAttr(activeSection,styleInitial.style||'');
+      else{
+        const key=sectionKeyByElement.get(activeSection);
+        if(key)setStyleAttr(activeSection,originalSectionStyles[key]||'');
+      }
       saveDraft();
       status('Section style reset to original · press Save to commit');
     }
@@ -401,6 +495,49 @@
     status('Section moved · press Save to commit');
   }
 
+  function duplicateSection(){
+    if(!activeSection)return;
+    if(activeSection.querySelector('.hero-slider')){
+      status('The hero slider cannot be duplicated safely · choose another section');
+      return;
+    }
+    const clone=activeSection.cloneNode(true);
+    removeDuplicateIds(clone);
+    clone.classList.remove('gps-section-selected');
+    clone.querySelectorAll('.gps-text-selected,.gps-link-selected').forEach(el=>el.classList.remove('gps-text-selected','gps-link-selected'));
+    const id=makeCloneId();
+    cloneIdByElement.set(clone,id);
+    activeSection.insertAdjacentElement('afterend',clone);
+    if(document.body.classList.contains('gps-editing')){
+      clone.querySelectorAll('[data-gps-edit-id]').forEach(el=>{
+        el.setAttribute('contenteditable','true');
+        el.setAttribute('spellcheck','true');
+      });
+    }
+    if(activeSection)activeSection.classList.remove('gps-section-selected');
+    activeSection=clone;
+    activeText=null;
+    clone.classList.add('gps-section-selected');
+    saveDraft();
+    updateButtons();
+    try{clone.scrollIntoView({behavior:'smooth',block:'center'});}catch(e){}
+    status('Section duplicated · edit it, then press Save to commit');
+  }
+
+  function deleteSection(){
+    if(!activeSection)return;
+    if(!confirm('Delete this whole section? You can use Reset page before saving if you change your mind.'))return;
+    const doomed=activeSection;
+    const next=doomed.nextElementSibling||doomed.previousElementSibling;
+    doomed.remove();
+    activeText=null;
+    activeSection=next||null;
+    if(activeSection)activeSection.classList.add('gps-section-selected');
+    saveDraft();
+    updateButtons();
+    status('Section deleted · press Save to commit');
+  }
+
   document.addEventListener('click',e=>selectTargets(e.target),true);
 
   panel.addEventListener('click',e=>{
@@ -413,6 +550,8 @@
     if(action==='section')openSectionStyle();
     if(action==='up')moveSection(-1);
     if(action==='down')moveSection(1);
+    if(action==='duplicate')duplicateSection();
+    if(action==='delete')deleteSection();
   });
 
   styleOverlay.addEventListener('click',e=>{
@@ -446,6 +585,19 @@
     if(e.key==='Escape'){e.preventDefault();closeStyle();}
   });
 
+  document.addEventListener('input',e=>{
+    const section=findSection(e.target);
+    if(!section||!isCloneSection(section))return;
+    saveDraft();
+    status('Duplicated section edited · press Save to commit');
+  });
+
+  const cloneAttributeObserver=new MutationObserver(mutations=>{
+    if(!mutations.some(m=>m.type==='attributes'&&isCloneSection(findSection(m.target))))return;
+    saveDraft();
+  });
+  cloneAttributeObserver.observe(main,{subtree:true,attributes:true,attributeFilter:['href','target','rel','style']});
+
   function applyToSource(sourceDoc,sourceEditableMap){
     const d=currentDraft();
     const missing=[];
@@ -464,7 +616,24 @@
       setStyleAttr(el,d.elementStyles[id]);
     });
 
-    if(Array.isArray(d.order)&&sourceMain){
+    if(Array.isArray(d.structure)&&sourceMain){
+      const wanted=[];
+      d.structure.forEach(item=>{
+        if(item&&item.type==='original'){
+          const el=sourceSections.map[item.key];
+          if(el)wanted.push(el);else missing.push('structure:'+item.key);
+        }else if(item&&item.type==='clone'){
+          const template=sourceDoc.createElement('template');
+          template.innerHTML=String(item.html||'').trim();
+          const el=template.content.firstElementChild;
+          if(!el){missing.push('clone:'+String(item.id||''));return;}
+          stripEditorState(el,true);
+          wanted.push(el);
+        }
+      });
+      while(sourceMain.firstChild)sourceMain.removeChild(sourceMain.firstChild);
+      wanted.forEach(el=>sourceMain.appendChild(el));
+    }else if(Array.isArray(d.order)&&sourceMain){
       d.order.forEach(key=>{
         const el=sourceSections.map[key];
         if(el)sourceMain.appendChild(el);
@@ -475,6 +644,7 @@
   }
 
   function markSaved(){
+    const hadStructure=!!currentDraft().structure;
     originalOrder=listSections(main).map(el=>sectionKeyByElement.get(el)).filter(Boolean);
     Object.keys(sectionElements).forEach(key=>{
       if(sectionElements[key])originalSectionStyles[key]=sectionElements[key].getAttribute('style')||'';
@@ -483,9 +653,11 @@
       if(editableElements[id])originalElementStyles[id]=editableElements[id].getAttribute('style')||'';
     });
     localStorage.removeItem(STORAGE_KEY);
+    if(hadStructure)setTimeout(()=>location.reload(),1400);
   }
 
   function reset(){
+    listSections(main).filter(el=>isCloneSection(el)).forEach(el=>el.remove());
     Object.keys(sectionElements).forEach(key=>setStyleAttr(sectionElements[key],originalSectionStyles[key]||''));
     Object.keys(originalElementStyles).forEach(id=>{
       if(editableElements[id])setStyleAttr(editableElements[id],originalElementStyles[id]||'');
